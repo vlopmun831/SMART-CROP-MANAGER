@@ -1,1 +1,15 @@
-/.metadata/
+
+# Ignorar binarios de Java
+*.class
+bin/
+target/
+
+# Ignorar archivos de configuración del IDE (Eclipse/IntelliJ)
+.metadata/
+.settings/
+.classpath
+.project
+
+# Archivos temporales del sistema
+Thumbs.db
+.DS_Store

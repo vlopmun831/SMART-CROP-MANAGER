@@ -1,11 +1,15 @@
 package com.tfg.smart_crop_manager.services;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.tfg.smart_crop_manager.dto.RiegoDTO;
+import com.tfg.smart_crop_manager.mappers.RiegoMapper;
 import com.tfg.smart_crop_manager.persistence.entities.Riego;
 import com.tfg.smart_crop_manager.persistence.entities.ZonaCultivo;
 import com.tfg.smart_crop_manager.persistence.repositories.RiegoRepository;
@@ -23,10 +27,12 @@ public class RiegoService {
     
 
     // Consultar el historial de riego para una zona
-    public List<Riego> findByZonaCultivoId(int idZona) {
-        zonaCultivoService.findById(idZona); 
-        return this.riegoRepository.findByZonaCultivoIdOrderByFechaDescHoraInicioDesc(idZona);
-    }
+    public List<RiegoDTO> findByZonaCultivoId(int idZona) {
+        zonaCultivoService.findById(idZona);
+        List<Riego> riegos = this.riegoRepository.findByZonaCultivoIdOrderByFechaDescHoraInicioDesc(idZona);
+        return riegos.stream()
+                .map(RiegoMapper::toDTO)
+                .collect(Collectors.toList());    }
     
 	public Riego findById(Integer id) {
 		if (id == null || !this.riegoRepository.existsById(id)) {
@@ -38,14 +44,14 @@ public class RiegoService {
    
     
     // Controlar el riego (Iniciar riego y registrar)
-	public Riego iniciarRiego(Integer idZona, LocalDate horaInicio) {
+	public Riego iniciarRiego(Integer idZona, LocalDateTime horaInicio) {
         // En un proyecto real, aquí iría la llamada a la API del hardware
         
         ZonaCultivo zona = zonaCultivoService.findById(idZona);
         
         Riego nuevoRiego = new Riego();
         nuevoRiego.setFecha(LocalDate.now());
-        nuevoRiego.setHoraInicio(horaInicio != null ? horaInicio : LocalDate.now());
+        nuevoRiego.setHoraInicio(horaInicio != null ? horaInicio : LocalDateTime.now());
         // La horaFin se podría establecer más tarde al detener el riego
         nuevoRiego.setZonaCultivo(zona);
         
@@ -53,14 +59,14 @@ public class RiegoService {
 	}
     
     // Finalizar/Detener el riego (actualizando el registro existente)
-    public Riego finalizarRiego(Integer idRiego, LocalDate horaFin) {
+    public Riego finalizarRiego(Integer idRiego, LocalDateTime horaFin) {
         Riego riegoBD = this.findById(idRiego);
         
         if (riegoBD.getHoraFin() != null) {
             throw new RiegoException("El registro de riego ya tiene una hora de finalización.");
         }
         
-        riegoBD.setHoraFin(horaFin != null ? horaFin : LocalDate.now());
+        riegoBD.setHoraFin(horaFin != null ? horaFin : LocalDateTime.now());
         
         return this.riegoRepository.save(riegoBD);
     }

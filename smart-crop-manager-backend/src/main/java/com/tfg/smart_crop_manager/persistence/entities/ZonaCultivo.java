@@ -10,6 +10,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -37,13 +38,20 @@ public class ZonaCultivo {
 	    private VariedadCultivo varCultivo;
 
 	    private String ubicacion;
-	 // Relación N:1 con Usuario
-	    @ManyToOne
-	    @JoinColumn(name = "id_usuario", nullable = false)
+	
+	 // --- NUEVOS CAMPOS PARA EL ADMINISTRADOR ---
+	    // Estos campos permiten personalizar los límites de cada zona
+	    private Double humSueloMinConfig; // Para alertas de SUELO_SECO
+	    private Double humSueloMaxConfig; // Para alertas de SUELO_ENCHARCADO
+	    private Double tempMaxConfig;     // Para alertas de CALOR_EXTREMO
+	    
+	    
+	    // Relación N:1 con Usuario
+	    @ManyToOne(fetch = FetchType.EAGER)
+	    @JoinColumn(name = "id_usuario", nullable = true) // El 'true' permite zonas sin dueño
 	    private Usuario usuario;
 	    
 	    @OneToMany(mappedBy = "zonaCultivo", cascade = CascadeType.ALL, orphanRemoval = true)
 	    private List<Registro> registros = new ArrayList<>();
-
 	    
 }

@@ -1,6 +1,9 @@
 package com.tfg.smart_crop_manager.persistence.entities;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -26,11 +29,13 @@ public class Riego {
 
 	    private LocalDate fecha;
 
-	    @Column(name = "hora_inicio") 
-	    private LocalDate horaInicio;
+	    @Column(name = "hora_inicio")
+	    @JsonFormat(pattern = "dd-MM-yyyy HH:mm:ss")
+	    private LocalDateTime horaInicio;
 	    
 	    @Column(name = "hora_fin") 
-	    private LocalDate horaFin;
+	    @JsonFormat(pattern = "dd-MM-yyyy HH:mm:ss")
+	    private LocalDateTime horaFin;
 	    
 	    
 	    

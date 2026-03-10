@@ -11,6 +11,7 @@ import com.tfg.smart_crop_manager.services.exceptions.UsuarioNotFoundException;
 import com.tfg.smart_crop_manager.services.exceptions.ZonaCultivoException;
 import com.tfg.smart_crop_manager.services.exceptions.ZonaCultivoNotFoundException;
 
+import org.springframework.transaction.annotation.Transactional;
 @Service
 public class ZonaCultivoService {
 	
@@ -20,6 +21,11 @@ public class ZonaCultivoService {
 	 @Autowired
 	 private UsuarioService usuarioService; // Para verificar y obtener el usuario asociado
 	 
+	 
+	 //Todas las zonas
+	 public List<ZonaCultivo> findAll() {
+		    return this.zonaCultivoRepository.findAll();
+		}
 	//  Consultar zonas del usuario 
 	    public List<ZonaCultivo> findByUsuario(Integer idUsuario) { // USAR INTEGER
 	        try {
@@ -31,9 +37,12 @@ public class ZonaCultivoService {
 	        return this.zonaCultivoRepository.findByUsuarioId(idUsuario);
 	    }
 	   //Consultar una zona de cultivo
+	    @Transactional(readOnly = true)
 		public ZonaCultivo findById(Integer id) { 
 			if (id == null || !this.zonaCultivoRepository.existsById(id)) {
-				throw new ZonaCultivoNotFoundException("El id de la zona de cultivo no existe.");
+				throw new ZonaCultivoNotFoundException(
+						String.format("La zona de cultivo con ID %d no existe.", id)
+						);
 			}
 			return this.zonaCultivoRepository.findById(id).get();
 		}
@@ -67,13 +76,29 @@ public class ZonaCultivoService {
 			if (zonaCultivo.getUbicacion() != null) {
 	            zonaBD.setUbicacion(zonaCultivo.getUbicacion());
 	        }
+			if (zonaCultivo.getUsuario() != null) {
+		        zonaBD.setUsuario(zonaCultivo.getUsuario());
+		    }
+			// 2. NUEVOS CAMPOS DE CONFIGURACIÓN (Admin Control)
+		    // Permite que el Admin ajuste los umbrales personalizados
+		    if (zonaCultivo.getHumSueloMinConfig() != null) {
+		        zonaBD.setHumSueloMinConfig(zonaCultivo.getHumSueloMinConfig());
+		    }
+		    if (zonaCultivo.getHumSueloMaxConfig() != null) {
+		        zonaBD.setHumSueloMaxConfig(zonaCultivo.getHumSueloMaxConfig());
+		    }
+		    if (zonaCultivo.getTempMaxConfig() != null) {
+		        zonaBD.setTempMaxConfig(zonaCultivo.getTempMaxConfig());
+		    }
 			
 			return this.zonaCultivoRepository.save(zonaBD);
 		}
 		
 		public void delete(int id) {
 			if (!this.zonaCultivoRepository.existsById(id)) {
-				throw new ZonaCultivoNotFoundException("El id de la alerta no existe.");
+				throw new ZonaCultivoNotFoundException(
+						String.format("La zona de cultivo con ID %d no existe.", id)
+						);
 			}
 			this.zonaCultivoRepository.deleteById(id);
 		}

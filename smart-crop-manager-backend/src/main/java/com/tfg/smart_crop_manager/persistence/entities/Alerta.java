@@ -2,6 +2,7 @@ package com.tfg.smart_crop_manager.persistence.entities;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.tfg.smart_crop_manager.persistence.enums.EstadoAlerta;
 import com.tfg.smart_crop_manager.persistence.enums.TipoAlerta;
 
@@ -31,13 +32,17 @@ public class Alerta {
 
 	    @Enumerated(EnumType.STRING)
 	    private TipoAlerta tipoAlerta;
+	    
+	    private String descripcion;
 
 	    private Double max;
 	    private Double min;
 
 	    @Enumerated(EnumType.STRING)
 	    private EstadoAlerta estado;
-
+	    
+	    
+	    @JsonFormat(pattern = "dd-MM-yyyy HH:mm:ss")
 	    private LocalDateTime fecha;
 	
 	 // Relación N:1 con ZonaCultivo

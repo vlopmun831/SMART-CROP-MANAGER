@@ -1,6 +1,7 @@
 package com.tfg.smart_crop_manager.controllers;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,6 +15,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.tfg.smart_crop_manager.dto.RiegoDTO;
+import com.tfg.smart_crop_manager.mappers.RiegoMapper;
+import com.tfg.smart_crop_manager.persistence.entities.Riego;
 import com.tfg.smart_crop_manager.services.RiegoService;
 import com.tfg.smart_crop_manager.services.exceptions.RiegoException;
 import com.tfg.smart_crop_manager.services.exceptions.RiegoNotFoundException;
@@ -30,10 +34,11 @@ public class RiegoController {
     @PostMapping("/zona/{idZona}/iniciar")
     public ResponseEntity<?> iniciarRiego(
         @PathVariable Integer idZona,
-        @RequestParam(required = false) LocalDate horaInicio) { 
+        @RequestParam(required = false) LocalDateTime horaInicio) { 
         
         try {
-            return ResponseEntity.status(HttpStatus.CREATED).body(this.riegoService.iniciarRiego(idZona, horaInicio));
+        	Riego nuevo = this.riegoService.iniciarRiego(idZona, horaInicio);
+            return ResponseEntity.status(HttpStatus.CREATED).body(RiegoMapper.toDTO(nuevo));
         } catch (ZonaCultivoNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
@@ -43,10 +48,11 @@ public class RiegoController {
     @PutMapping("/{idRiego}/finalizar")
     public ResponseEntity<?> finalizarRiego(
         @PathVariable Integer idRiego,
-        @RequestParam(required = false) LocalDate horaFin) {
+        @RequestParam(required = false) LocalDateTime horaFin) {
         
         try {
-            return ResponseEntity.ok(this.riegoService.finalizarRiego(idRiego, horaFin));
+        	Riego finalizado = this.riegoService.finalizarRiego(idRiego, horaFin);
+            return ResponseEntity.ok(RiegoMapper.toDTO(finalizado));
         } catch (RiegoNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (RiegoException e) {
@@ -58,7 +64,8 @@ public class RiegoController {
     @GetMapping("/zona/{idZona}/historial")
     public ResponseEntity<?> obtenerHistorialRiego(@PathVariable Integer idZona) {
         try {
-            return ResponseEntity.ok(this.riegoService.findByZonaCultivoId(idZona));
+        	List<RiegoDTO> historial = this.riegoService.findByZonaCultivoId(idZona);
+            return ResponseEntity.ok(historial);
         } catch (ZonaCultivoNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }

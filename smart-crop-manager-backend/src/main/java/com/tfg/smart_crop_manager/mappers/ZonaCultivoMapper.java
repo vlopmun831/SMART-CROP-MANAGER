@@ -21,15 +21,22 @@ public class ZonaCultivoMapper {
 
         // Aplanamos la relación con Usuario para evitar el JSON infinito
         if (zona.getUsuario() != null) {
-            dto.setNombreUsuario(zona.getUsuario().getNombre());
             dto.setIdUsuario(zona.getUsuario().getId());
+            dto.setNombreUsuario(zona.getUsuario().getNombre());
+
+        }else {
+            dto.setIdUsuario(null);
+        	dto.setNombreUsuario("ZONA DISPONIBLE"); // Mensaje amigable para el Admin
         }
     
 
 	// (Lógica para el resumen)
     if (zona.getRegistros() != null && !zona.getRegistros().isEmpty()) {
         // Cogemos el último registro (el más reciente)
-        Registro ultimo = zona.getRegistros().get(zona.getRegistros().size() - 1);
+        Registro ultimo = zona.getRegistros().stream()
+				.filter(r -> r.getFecha() != null)
+                .max((r1, r2) -> r1.getFecha().compareTo(r2.getFecha()))
+                .orElse(zona.getRegistros().get(zona.getRegistros().size() - 1));;
         
         dto.setUltimaTemperatura(ultimo.getTemperatura());
         dto.setUltimaHumedadSuelo(ultimo.getHumedadSuelo());

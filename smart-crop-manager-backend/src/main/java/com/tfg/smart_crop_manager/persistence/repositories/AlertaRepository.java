@@ -21,7 +21,7 @@ public interface AlertaRepository extends JpaRepository<Alerta, Integer>{
     List<Alerta>findByZonaCultivoIdAndTipoAlerta(Integer idZona, TipoAlerta tipoAlerta);
     
  // AlertaRepository.java
-    @Query("SELECT a FROM Alerta a WHERE a.zonaCultivo.usuario.id = :idUsuario AND a.resuelta = false")
+ // Reemplaza tu método findPendientesByUsuarioId por este:
+    @Query("SELECT a FROM Alerta a WHERE a.zonaCultivo.usuario.id = :idUsuario AND a.estado = com.tfg.smart_crop_manager.persistence.enums.EstadoAlerta.PENDIENTE")
     List<Alerta> findPendientesByUsuarioId(@Param("idUsuario") Integer idUsuario);
-	
 }

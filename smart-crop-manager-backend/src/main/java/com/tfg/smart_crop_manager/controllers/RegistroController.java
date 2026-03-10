@@ -5,7 +5,6 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,6 +24,21 @@ public class RegistroController {
 	
 	@Autowired
     private RegistroService registroService;
+	
+	
+	
+	@GetMapping("/zona/{idZona}/ultimo")
+	public ResponseEntity<?> obtenerUltimoRegistro(@PathVariable Integer idZona) {
+		try {
+            Registro ultimo = this.registroService.findUltimoPorZona(idZona);
+            return ResponseEntity.ok(RegistroMapper.toDTO(ultimo));
+        } catch (ZonaCultivoNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (RegistroNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+	
 
     // Consultar los datos registrados para cada zona (Historial)
     @GetMapping("/zona/{idZona}")
@@ -50,15 +64,6 @@ public class RegistroController {
         }
     }
     
-    // Eliminar un registro ()
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> eliminarRegistro(@PathVariable Integer id) {
-        try {
-            this.registroService.deleteById(id);
-            return ResponseEntity.ok().build();
-        } catch (RegistroNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        }
-    }  
+  
 
 }

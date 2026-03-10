@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.tfg.smart_crop_manager.dto.ZonaCultivoDTO;
 import com.tfg.smart_crop_manager.mappers.ZonaCultivoMapper;
 import com.tfg.smart_crop_manager.persistence.entities.ZonaCultivo;
 import com.tfg.smart_crop_manager.services.ZonaCultivoService;
@@ -26,6 +27,14 @@ public class ZonaCultivoController {
 	
     @Autowired
     private ZonaCultivoService zonaCultivoService;
+    
+    
+ // Listado total para el Administrador/Dueño
+    @GetMapping
+    public ResponseEntity<List<ZonaCultivoDTO>> findAll() {
+        List<ZonaCultivo> zonas = this.zonaCultivoService.findAll();
+        return ResponseEntity.ok(ZonaCultivoMapper.toDTOsFuncional(zonas));
+    }
 
     // Listar zonas del usuario - Devuelve lista de DTOs
     @GetMapping("/usuario/{idUsuario}")

@@ -1,4 +1,4 @@
-package com.tfg.smart_crop_manager.controllers;
+package com.tfg.smart_crop_manager.web.controllers;
 
 import java.util.List;
 

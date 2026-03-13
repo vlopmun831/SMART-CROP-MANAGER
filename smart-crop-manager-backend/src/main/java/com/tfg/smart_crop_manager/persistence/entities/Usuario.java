@@ -4,9 +4,13 @@ package com.tfg.smart_crop_manager.persistence.entities;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.tfg.smart_crop_manager.persistence.enums.Rol;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -34,6 +38,10 @@ public class Usuario {
 
 	    @Column(nullable = false)
 	    private String password;
+	    
+	    @Enumerated(EnumType.STRING) 
+	    @Column(name = "rol", nullable = false)
+	    private Rol rol;
 
 	   
 	    

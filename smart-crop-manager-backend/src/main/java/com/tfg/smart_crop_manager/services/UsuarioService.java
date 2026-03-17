@@ -24,10 +24,11 @@ public class UsuarioService implements UserDetailsService{
 	
 	
 	@Override
-	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+	public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
 
-		Usuario usuario = this.usuarioRepository.findByUsername(username).orElseThrow(
-				() -> new UsernameNotFoundException("El usuario " + username + " no existe. "));
+		Usuario usuario = this.usuarioRepository.findByEmail(email)
+				.orElseThrow(
+				() -> new UsernameNotFoundException("El email " + email + " no existe. "));
 		
 		return User.builder()
 				.username(usuario.getEmail())

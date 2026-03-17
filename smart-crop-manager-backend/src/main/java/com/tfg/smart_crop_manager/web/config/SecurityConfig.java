@@ -8,10 +8,18 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -26,21 +34,34 @@ public class SecurityConfig {
 			.cors(cors -> cors.configurationSource(corsConfigurationSource()))
 			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.authorizeHttpRequests(auth -> auth
-                // 🔓 Rutas públicas (Login y Registro)
-                .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
-                .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
-                .requestMatchers(HttpMethod.POST, "/auth/refresh").permitAll()
-                
-                // 👑 Permisos para ADMIN (Gestión de usuarios y ver todas las zonas)
-                .requestMatchers("/usuarios/**").hasRole("ADMIN")
-                
-                // 🛡️ Permisos para ADMIN y USUARIO (Ver registros y zonas propias)
-                .requestMatchers(HttpMethod.GET, "/registros/**").hasAnyRole("ADMIN", "USUARIO")
-                .requestMatchers(HttpMethod.GET, "/zonas/**").hasAnyRole("ADMIN", "USUARIO")
-                
-                // 🔐 El resto de peticiones requieren estar logueado
-                .anyRequest().authenticated()
+				// 1. Rutas públicas (Login y Registro)
+				.requestMatchers("/auth/**").permitAll()
+				
+				// 2. ÁREA DE ADMINISTRACIÓN: Solo el jefe (ADMIN)
+			    // Solo el admin puede listar, crear, modificar o borrar usuarios y administradores
+			    .requestMatchers("/usuario/**").hasRole("ADMIN")
+			    .requestMatchers("/administrador/**").hasRole("ADMIN")
+
+			    // 3. ÁREA DE CULTIVOS (Zonas): Compartida con permisos específicos
+			    // Ver todas las zonas: solo Admin
+			    .requestMatchers(HttpMethod.GET, "/zonas").hasRole("ADMIN") 
+			    
+			    // Operaciones de gestión de zonas: Admin y Usuario
+			    .requestMatchers("/zonas/**").hasAnyRole("ADMIN", "USUARIO")
+
+			    // 4. ÁREA DE DATOS Y SENSORES (Registros):
+			    // El sensor (POST) y las consultas las pueden hacer ambos
+			    .requestMatchers("/registros/**").hasAnyRole("ADMIN", "USUARIO")
+
+			    // 5. ÁREA DE OPERACIONES (Riego y Alertas):
+			    // El agricultor necesita gestionar sus riegos y alertas
+			    .requestMatchers("/riego/**").hasAnyRole("ADMIN", "USUARIO")
+			    .requestMatchers("/alertas/**").hasAnyRole("ADMIN", "USUARIO")
+
+			    // 6. SEGURIDAD TOTAL: Cualquier otra ruta pide estar logueado
+			    .anyRequest().authenticated()
 			)
+			// Añadimos tu vigilante JWT antes del filtro de usuario/password
 			.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 			
 		return http.build();
@@ -54,9 +75,8 @@ public class SecurityConfig {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Permitimos el origen del frontend (típicamente 4200 para Angular)
-        List<String> allowedOrigins = Arrays.asList("http://localhost:4200");
-        configuration.setAllowedOrigins(allowedOrigins);
+        // Permitimos el acceso desde el futuro Frontend (Angular/React)
+        configuration.setAllowedOrigins(List.of("http://localhost:4200"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept"));
         configuration.setExposedHeaders(List.of("Authorization"));
@@ -70,6 +90,5 @@ public class SecurityConfig {
     @Bean
     AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
-    }
-
+    }	
 }

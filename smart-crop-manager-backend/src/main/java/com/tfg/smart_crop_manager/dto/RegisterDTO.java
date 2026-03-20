@@ -1,5 +1,6 @@
 package com.tfg.smart_crop_manager.dto;
 
+
 import com.tfg.smart_crop_manager.persistence.enums.Rol;
 
 import lombok.Getter;

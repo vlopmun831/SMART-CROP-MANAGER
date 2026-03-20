@@ -17,6 +17,7 @@ import com.tfg.smart_crop_manager.persistence.repositories.AlertaRepository;
 import com.tfg.smart_crop_manager.services.exceptions.AlertaException;
 import com.tfg.smart_crop_manager.services.exceptions.AlertaNotFoundException;
 
+
 @Service
 public class AlertaService {
 

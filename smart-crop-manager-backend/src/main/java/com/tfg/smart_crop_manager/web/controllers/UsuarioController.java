@@ -20,6 +20,7 @@ import com.tfg.smart_crop_manager.persistence.entities.Usuario;
 import com.tfg.smart_crop_manager.services.UsuarioService;
 import com.tfg.smart_crop_manager.services.exceptions.UsuarioException;
 import com.tfg.smart_crop_manager.services.exceptions.UsuarioNotFoundException;
+
 @RestController
 @RequestMapping("usuario")
 public class UsuarioController {

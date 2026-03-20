@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 
 import com.tfg.smart_crop_manager.dto.LoginDTO;
 import com.tfg.smart_crop_manager.dto.RegisterDTO;
-import com.tfg.smart_crop_manager.dto.RegistroDTO;
 import com.tfg.smart_crop_manager.dto.TokenDTO;
 import com.tfg.smart_crop_manager.persistence.entities.Usuario;
 import com.tfg.smart_crop_manager.persistence.repositories.UsuarioRepository;

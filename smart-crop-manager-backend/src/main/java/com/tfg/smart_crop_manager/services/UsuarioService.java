@@ -7,6 +7,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.tfg.smart_crop_manager.persistence.entities.Usuario;
@@ -20,6 +21,9 @@ public class UsuarioService implements UserDetailsService{
 
 	@Autowired
 	private UsuarioRepository usuarioRepository;
+	
+	@Autowired
+    private PasswordEncoder passwordEncoder;
 	
 	
 	
@@ -53,6 +57,7 @@ public class UsuarioService implements UserDetailsService{
 	}
 
 	public Usuario create(Usuario usuario) {
+		usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
 		if(usuario.getZonasCultivo() != null) {
 			for (ZonaCultivo zona : usuario.getZonasCultivo()) {
 				zona.setUsuario(usuario);
@@ -64,6 +69,7 @@ public class UsuarioService implements UserDetailsService{
 	}
 
 	public Usuario update(Usuario usuario, Integer id) {
+		usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
 
 		if (usuario.getId() == null || !usuario.getId().equals(id)) {
 			throw new UsuarioException(

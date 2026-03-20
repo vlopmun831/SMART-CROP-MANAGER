@@ -1,6 +1,5 @@
 package com.tfg.smart_crop_manager.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -8,10 +7,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
-public class LoginResponse {
+public class LoginDTO {
+	private String email;
+    private String password;
 
-	private String access;
-    private String refresh;
-	
 }

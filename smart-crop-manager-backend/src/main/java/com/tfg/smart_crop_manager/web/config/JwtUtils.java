@@ -1,6 +1,8 @@
 package com.tfg.smart_crop_manager.web.config;
 
+
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,70 +12,37 @@ import org.springframework.stereotype.Component;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.interfaces.DecodedJWT;
 
 @Component
 public class JwtUtils {
 	
-	@Autowired
-	private JwtConfig jwtConfig;
+	private static String SECRET_KEY = "mi_clave_secreta_tfg_2026";
+	private static Algorithm ALGORITHM = Algorithm.HMAC256(SECRET_KEY);
 	
-    public String generateAccessToken(UserDetails userDetails) {
-        return JWT.create()
-            .withSubject(userDetails.getUsername())
-            .withClaim("roles", userDetails.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
-            .withIssuedAt(new Date())
-            .withIssuer(jwtConfig.getIssuer())
-            .withExpiresAt(new Date(System.currentTimeMillis() + jwtConfig.getAccessTokenExpires()))
-            .sign(Algorithm.HMAC256(jwtConfig.getSecret()));
-    }
-    
-    public String generateRefreshToken(UserDetails userDetails) {
-        return JWT.create()
-            .withSubject(userDetails.getUsername())
-            .withClaim("roles", userDetails.getAuthorities().stream()
-                    .map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
-            .withClaim("type", "refresh") // Opcional: ayuda a distinguir el tipo de token
-            .withIssuedAt(new Date())
-            .withIssuer(jwtConfig.getIssuer())
-            .withExpiresAt(new Date(System.currentTimeMillis() + jwtConfig.getRefreshTokenExpires()))
-            .sign(Algorithm.HMAC256(jwtConfig.getSecret()));
-    }
-    
-    public String extractUsername(String token) {
-        return JWT.require(Algorithm.HMAC256(jwtConfig.getSecret()))
-            .build()
-            .verify(token)
-            .getSubject();
-    }
-    
-    public boolean validateToken(String token, UserDetails userDetails) {
-        String username = extractUsername(token);
-        return username.equals(userDetails.getUsername());
-    }
-        
-    public String generateAccessToken(String token) {
-        DecodedJWT jwt = JWT.decode(token);
-        return JWT.create()
-            .withSubject(jwt.getSubject())
-            .withClaim("roles", jwt.getClaim("roles").asList(String.class))
-            .withIssuedAt(new Date())
-            .withIssuer(jwtConfig.getIssuer())
-            .withExpiresAt(new Date(System.currentTimeMillis() + jwtConfig.getAccessTokenExpires()))
-            .sign(Algorithm.HMAC256(jwtConfig.getSecret()));
-    }
-    
-    public String generateRefreshToken(String token) {
-        DecodedJWT jwt = JWT.decode(token);
-        return JWT.create()
-            .withSubject(jwt.getSubject())
-            .withClaim("roles", jwt.getClaim("roles").asList(String.class))
-            .withClaim("type", "refresh")
-            .withIssuedAt(new Date())
-            .withIssuer(jwtConfig.getIssuer())
-            .withExpiresAt(new Date(System.currentTimeMillis() + jwtConfig.getAccessTokenExpires()))
-            .sign(Algorithm.HMAC256(jwtConfig.getSecret()));
-    }    
+	
+	public String create (String email) {
+		return JWT.create()
+				.withSubject(email)
+				.withIssuer("smartcrop")
+				.withIssuedAt(new Date())
+				.withExpiresAt(new Date (System.currentTimeMillis()+ TimeUnit.DAYS.toMillis(15)))
+				.sign(ALGORITHM);
+	}
 
+	
+	public String getEmail(String jwt) {
+        return JWT.require(ALGORITHM).build().verify(jwt).getSubject();
+    }
+
+    public boolean isValid(String jwt) {
+        try {
+            JWT.require(ALGORITHM).build().verify(jwt);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+
+    
 }

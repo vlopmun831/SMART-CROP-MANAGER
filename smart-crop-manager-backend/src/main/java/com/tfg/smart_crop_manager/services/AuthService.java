@@ -1,78 +1,78 @@
 package com.tfg.smart_crop_manager.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.tfg.smart_crop_manager.dto.LoginRequest;
-import com.tfg.smart_crop_manager.dto.LoginResponse;
-import com.tfg.smart_crop_manager.dto.RefreshDTO; // 👈 Importante añadir este
-import com.tfg.smart_crop_manager.dto.RegisterRequest;
+import com.tfg.smart_crop_manager.dto.LoginDTO;
+import com.tfg.smart_crop_manager.dto.RegisterDTO;
+import com.tfg.smart_crop_manager.dto.RegistroDTO;
+import com.tfg.smart_crop_manager.dto.TokenDTO;
 import com.tfg.smart_crop_manager.persistence.entities.Usuario;
-import com.tfg.smart_crop_manager.persistence.enums.Rol;
+import com.tfg.smart_crop_manager.persistence.repositories.UsuarioRepository;
 import com.tfg.smart_crop_manager.web.config.JwtUtils;
 
 @Service
 public class AuthService {
 
-    @Autowired
+	@Autowired
     private AuthenticationManager authenticationManager;
 
     @Autowired
-    private JwtUtils jwtUtil;
+    private JwtUtils jwtUtils;
 
     @Autowired
-    private UsuarioService usuarioService;
+    private UsuarioRepository usuarioRepository;
+    
+    @Autowired 
+    @Lazy
+    private PasswordEncoder passwordEncoder;
 
-    public LoginResponse login(LoginRequest request) {
-        // 1. Validamos credenciales
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
+    public TokenDTO login(LoginDTO loginDto) {
+        // 1. Intentar autenticar con email y password
+        Authentication auth = authenticationManager.authenticate(
+            new UsernamePasswordAuthenticationToken(loginDto.getEmail(), loginDto.getPassword())
         );
 
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        // 2. Si llegamos aquí sin errores, la autenticación fue exitosa
+        Usuario usuario = usuarioRepository.findByEmail(loginDto.getEmail())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado post-autenticación"));
 
-        // 2. Generamos los dos tokens
-        String accessToken = jwtUtil.generateAccessToken(userDetails);
-        String refreshToken = jwtUtil.generateRefreshToken(userDetails);
+        // 3. Generar el token
+        String token = jwtUtils.create(usuario.getEmail());
 
-        return new LoginResponse(accessToken, refreshToken);
+        // 4. Devolver el DTO con los datos que necesita el frontend
+        return new TokenDTO(token, usuario.getEmail(), usuario.getRol().name());
+    }
+    
+ // DENTRO de AuthService.java
+    public TokenDTO registrar(RegisterDTO registerDto) {
+        Usuario nuevoUsuario = new Usuario();
+        nuevoUsuario.setNombre(registerDto.getNombre());
+        nuevoUsuario.setEmail(registerDto.getEmail());
+        
+        // Encriptamos la contraseña (esto es lo que pedía tu PDF [cite: 363, 380])
+        nuevoUsuario.setPassword(passwordEncoder.encode(registerDto.getPassword()));
+        nuevoUsuario.setRol(registerDto.getRol());
+
+        // Guardamos en la base de datos
+        usuarioRepository.save(nuevoUsuario);
+
+        // Generamos el token para que el usuario entre directamente [cite: 559, 593]
+        String token = jwtUtils.create(nuevoUsuario.getEmail());
+        return new TokenDTO(token, nuevoUsuario.getEmail(), nuevoUsuario.getRol().name());
     }
 
-    public LoginResponse registrar(RegisterRequest request) {
-        if (!request.getPassword1().equals(request.getPassword2())) {
-            throw new RuntimeException("Las contraseñas no coinciden");
-        }
-
-        Usuario nuevo = new Usuario();
-        nuevo.setEmail(request.getEmail());
-        nuevo.setNombre(request.getNombre());
-        nuevo.setPassword(request.getPassword1()); 
-        nuevo.setRol(Rol.USUARIO);
-
-        usuarioService.create(nuevo);
-
-        return login(new LoginRequest(request.getEmail(), request.getPassword1()));
-    }
-
-    public LoginResponse refresh(RefreshDTO request) {
-        // Extraemos el email del token de refresco
-        String email = jwtUtil.extractUsername(request.getRefresh());
-        
-        // Cargamos los detalles del usuario
-        UserDetails userDetails = usuarioService.loadUserByUsername(email);
-        
-        // Validamos el token y generamos nuevos si es correcto
-        if (jwtUtil.validateToken(request.getRefresh(), userDetails)) {
-            String newAccess = jwtUtil.generateAccessToken(userDetails);
-            String newRefresh = jwtUtil.generateRefreshToken(userDetails);
-            
-            return new LoginResponse(newAccess, newRefresh);
-        } else {
-            throw new RuntimeException("Token de refresco inválido");
-        }
+    public TokenDTO refresh(String email) {
+        // Simplemente generamos un nuevo token para el usuario que ya está autenticado
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                
+        String nuevoToken = jwtUtils.create(usuario.getEmail());
+        return new TokenDTO(nuevoToken, usuario.getEmail(), usuario.getRol().name());
     }
 }

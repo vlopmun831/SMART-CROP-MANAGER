@@ -3,13 +3,17 @@
   "version": 1,
   "cli": {
     "packageManager": "npm",
-    "analytics": "7fcc476c-bde0-4a6a-9699-55a417072ee1"
+    "analytics": "78a9366b-a080-403c-a855-c9baf203fa65"
   },
   "newProjectRoot": "projects",
   "projects": {
     "smart-crop-manager-front": {
       "projectType": "application",
-      "schematics": {},
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss"
+        }
+      },
       "root": "",
       "sourceRoot": "src",
       "prefix": "app",
@@ -19,9 +23,10 @@
           "options": {
             "browser": "src/main.ts",
             "polyfills": [
-                "zone.js"  
-              ],
+                    "zone.js"
+                  ],
             "tsConfig": "tsconfig.app.json",
+            "inlineStyleLanguage": "scss",
             "assets": [
               {
                 "glob": "**/*",
@@ -29,8 +34,7 @@
               }
             ],
             "styles": [
-                 
-                  "src/styles.css"
+              "src/styles.scss"
             ]
           },
           "configurations": {

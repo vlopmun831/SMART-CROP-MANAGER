@@ -6,6 +6,7 @@ import { authInterceptor } from './core/interceptors/auth-interceptor'; // Lo cr
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
     provideHttpClient(withInterceptors([authInterceptor])) // Registramos el interceptor aquí
   ]

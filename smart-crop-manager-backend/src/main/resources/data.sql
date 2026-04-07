@@ -17,6 +17,7 @@ INSERT INTO registro (fecha, temperatura, humedad_suelo, humedad_aire, lluvia, i
 (DATE_SUB(NOW(), INTERVAL 2 HOUR), 22.1, 48.2, 65.0, 0, 1),
 (NOW(), 18.0, 70.0, 80.0, 1, 2),
 (NOW(), 30.5, 25.0, 40.0, 0, 3);
+(NOW(), 26.2, 38.5, 55.0, 0, 4);
 
 -- 4. RIEGOS
 -- Un riego finalizado y uno activo (sin hora_fin)

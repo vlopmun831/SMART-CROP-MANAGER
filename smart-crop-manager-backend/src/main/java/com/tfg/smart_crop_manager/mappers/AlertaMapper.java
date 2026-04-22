@@ -23,6 +23,13 @@ public class AlertaMapper {
         if (alerta.getZonaCultivo() != null) {
             dto.setIdZona(alerta.getZonaCultivo().getId());
             dto.setNombreZona(alerta.getZonaCultivo().getUbicacion());
+            if (alerta.getZonaCultivo().getUsuario() != null) {
+                dto.setNombreUsuario(alerta.getZonaCultivo().getUsuario().getNombre());
+            } else {
+                dto.setNombreUsuario("Sin asignar");
+            }
+        
+        
         }
 
         return dto;

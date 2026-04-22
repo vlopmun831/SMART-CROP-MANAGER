@@ -4,128 +4,272 @@ import { AuthService } from '../../core/services/auth';
 import { ZonaService } from '../../core/services/zona/zona';
 import { FormsModule } from '@angular/forms';
 import { UsuarioService } from '../../core/services/usuario/usuario';
+import { AlertaService } from '../../core/services/alerta/alerta';
+import Swal from 'sweetalert2';
+
 @Component({
   selector: 'app-dashboard',
-  standalone: true, // Asegúrate de que es standalone
+  standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
 })
 export class DashboardComponent implements OnInit {
-  // Inyectamos los servicios 
+  // 1. Inyectamos los servicios
   public authService = inject(AuthService);
   private zonaService = inject(ZonaService);
   private usuarioService = inject(UsuarioService);
+  private alertaService = inject(AlertaService);
 
-
-
-  // Usaremos un Signal para guardar las zonas que traigamos del Back
+  // 2. Signals para los datos
   public zonas = signal<any[]>([]);
-  // Signals para el formulario 
-  public verFormUsuario = signal<boolean>(false);
-
-  public verFormZona = signal<boolean>(false);
   public usuarios = signal<any[]>([]);
+  public alertasPendientes = signal<any[]>([]);
 
-  // Objeto para la nueva zona (siguiendo tu entidad Java)
+  public totalZonas = signal<number>(0);
+  public totalAlertasGlobales = signal<number>(0);
+  public totalUsuarios = signal<number>(0);
+    
+  // 3. Signals para controlar qué formulario se ve
+  public verFormUsuario = signal<boolean>(false);
+  public verFormZona = signal<boolean>(false);
+
+   public verListaUsuarios = signal(false);
+
+  // 4. Objetos para los formularios (Vincular con ngModel)
   public nuevaZona = {
-    varCultivo: 'VARIEDAD_1', // Valor por defecto del Enum
+    varCultivo: 'VARIEDAD_1',
     ubicacion: '',
-    humSueloMinConfig: 20.0,
-    humSueloMaxConfig: 80.0,
-    tempMaxConfig: 40.0,
-    usuario: { id: null } // Para asignar el dueño
+    humSueloMinConfig: '',
+    humSueloMaxConfig: '',
+    tempMaxConfig: '',
+    usuario: { id: null as number | null }
   };
 
-  
-
-  // Objeto para vincular con el formulario
   public nuevoUsuario = {
     nombre: '',
     email: '',
     password: '',
-    rol: 'USUARIO' // Por defecto creamos agricultores
+    rol: 'USUARIO'
   };
 
   ngOnInit() {
-    this.cargarDatos();
+    this.cargarDatosSegunRol();
   }
 
- cargarDatos() {
-  // Comprobamos el rol usando el signal de tu AuthService
+  // Lógica principal de carga
+  cargarDatosSegunRol() {
     const rol = this.authService.userRole();
-    
-    // Si el rol es ROLE_ADMIN (o como lo devuelva tu Java)
+    const userId = this.authService.userId();
+
     if (rol === 'ADMIN') {
-      this.zonaService.getZonas().subscribe({
-        next: (data) => this.zonas.set(data),
-        error: (err) => console.error('Error Admin:', err)
-      });
-    } else {
-      
-      this.zonaService.getZonas().subscribe({
-        next: (data) => this.zonas.set(data)
-      });
+    this.zonaService.getZonas().subscribe(data => {
+    this.zonas.set(data);
+    this.totalZonas.set(data.length); //  cuántas zonas hay
+  });
+
+  this.usuarioService.getUsuarios().subscribe(data => {
+    this.usuarios.set(data);
+    this.totalUsuarios.set(data.length); // cuántos usuarios hay
+  });
+  this.alertaService.getAlertasGlobales().subscribe(data => {
+   this.alertasPendientes.set(data);
+  
+  // ⚡ Calculamos solo las que están en rojo para el contador
+  const soloRojas = data.filter(a => a.estado === 'PENDIENTE').length;
+  this.totalAlertasGlobales.set(soloRojas); // Este es el que usaremos en el KPI
+});
+  
+
+}
+    else if (rol === 'USUARIO' && userId) {
+      this.zonaService.getZonasPorUsuario(userId).subscribe(data => this.zonas.set(data));
+      this.alertaService.getAlertasPendientes(userId).subscribe(data => this.alertasPendientes.set(data));
     }
   }
 
-  // Método para el botón del Admin
- crearNuevoUsuario() {
-    this.verFormUsuario.set(true); // Muestra el formulario en el HTML
+  // --- GESTIÓN DE ALERTAS ---
+ resolverAlerta(idAlerta: number) {
+  // 1. Opcional: Podrías poner un confirm aquí también, pero suele ser mejor acción directa
+  this.alertaService.cambiarEstado(idAlerta, 'RESUELTA').subscribe({
+    next: () => {
+      // 2. Avisamos al usuario con estilo
+      Swal.fire({
+        title: '¡Resuelta!',
+        text: 'La incidencia ha sido marcada como finalizada.',
+        icon: 'success',
+        timer: 1500, // Se cierra solo en segundo y medio
+        showConfirmButton: false,
+        background: '#0f172a',
+        color: '#ffffff'
+      });
+      
+      // 3. ¡IMPORTANTE! Recargamos los datos para que desaparezca de la lista
+      this.cargarDatosSegunRol();
+    },
+    error: (err) => {
+      Swal.fire({
+        title: 'Error',
+        text: 'No se pudo actualizar el estado de la alerta.',
+        icon: 'error',
+        background: '#0f172a',
+        color: '#ffffff'
+      });
+    }
+  });
+}
+
+  // --- GESTIÓN DE USUARIOS (ADMIN) ---
+  crearNuevoUsuario() {
+    this.verFormUsuario.set(true);
+    this.verFormZona.set(false);
   }
 
   guardarUsuario() {
-    console.log('Enviando datos al servidor...', this.nuevoUsuario);
-    
-    this.usuarioService.crearUsuario(this.nuevoUsuario).subscribe({
-      next: (res) => {
-        alert('¡Agricultor registrado correctamente!');
-        this.verFormUsuario.set(false); // Oculta el formulario y vuelve a la tabla
-        this.limpiarForm();
-        this.cargarDatos(); // Refrescamos la lista por si acaso
-      },
-      error: (err) => {
-        console.error('Error al registrar:', err);
-        alert('Error al registrar el usuario. Revisa la consola.');
-      }
-    });
+  this.usuarioService.crearUsuario(this.nuevoUsuario).subscribe({
+    next: (resp) => {
+      // ⚡ SweetAlert de éxito
+      Swal.fire({
+        title: '¡Registro Exitoso!',
+        text: `El agricultor ${this.nuevoUsuario.nombre} ha sido dado de alta.`,
+        icon: 'success',
+        background: '#0f172a',
+        color: '#ffffff',
+        confirmButtonColor: '#10b981',
+        timer: 2000, // Se cierra solo a los 2 segundos
+        showConfirmButton: false
+      });
+
+      this.verFormUsuario.set(false); // Cerramos el formulario automáticamente
+      this.limpiarFormUsuario();      // Limpiamos los campos
+      this.cargarDatosSegunRol();     // Actualizamos el contador de "Comunidad"
+    },
+    error: (err) => {
+      // ⚡ SweetAlert de error si el email ya existe o hay fallo en el server
+      Swal.fire({
+        title: 'Error en el alta',
+        text: err.error?.message || 'No se pudo registrar al usuario. Revisa los datos.',
+        icon: 'error',
+        background: '#0f172a',
+        color: '#ffffff',
+        confirmButtonColor: '#ef4444'
+      });
+    }
+  });
+}
+eliminarUsuario(id: number, nombre: string) {
+  Swal.fire({
+    title: `¿Eliminar a ${nombre}?`,
+    // ... resto del Swal ...
+  }).then((result) => {
+    if (result.isConfirmed) {
+      // ⚠️ AQUÍ: 'usuarioService' debe estar inyectado en el constructor o como propiedad
+      this.usuarioService.eliminarUsuario(id).subscribe({
+        next: () => {
+          Swal.fire('¡Eliminado!', '', 'success');
+          this.cargarDatosSegunRol(); 
+        }
+      });
+    }
+  });
+}
+  limpiarFormUsuario() {
+    this.nuevoUsuario = { nombre: '', email: '', password: '', rol: 'USUARIO' };
   }
 
-  limpiarForm() {
-    this.nuevoUsuario = {
-      nombre: '',
-      email: '',
-      password: '',
-      rol: 'USUARIO'
-    };
-  }
-
-  // 1. Función para abrir el formulario de zonas
+  // --- GESTIÓN DE ZONAS (ADMIN) ---
   crearNuevaZona() {
     this.verFormZona.set(true);
-    this.verFormUsuario.set(false); // Cerramos el otro por si acaso
-    
-    // Cargamos los usuarios para el desplegable
-    this.usuarioService.getUsuarios().subscribe({
-      next: (data) => this.usuarios.set(data),
-      error: (err) => console.error('Error al traer usuarios:', err)
-    });
+    this.verFormUsuario.set(false);
+    this.usuarioService.getUsuarios().subscribe(data => this.usuarios.set(data));
   }
 
-  // 2. Función para enviar la zona al Backend
-  guardarZona() {
-    // Si no se eligió usuario, lo enviamos como null (tu Java lo permite)
-    if (!this.nuevaZona.usuario.id) {
-       this.nuevaZona.usuario = null as any;
+ guardarZona() {
+  const zonaAEnviar = { ...this.nuevaZona };
+  if (!zonaAEnviar.usuario.id) {
+      zonaAEnviar.usuario = null as any;
+  }
+
+  this.zonaService.crearZona(zonaAEnviar).subscribe({
+    next: () => {
+      Swal.fire({
+        title: 'Zona Configurada',
+        text: 'La parcela se ha vinculado al sistema correctamente.',
+        icon: 'success',
+        background: '#0f172a',
+        color: '#ffffff',
+        timer: 2000,
+        showConfirmButton: false
+      });
+      this.verFormZona.set(false);
+      this.cargarDatosSegunRol();
+    },
+    error: (err) => {
+      Swal.fire('Error', 'No se pudo crear la zona', 'error');
     }
+  });
+}
 
-    this.zonaService.crearZona(this.nuevaZona).subscribe({
-      next: (res) => {
-        alert('¡Zona de cultivo configurada con éxito!');
-        this.verFormZona.set(false);
-        this.cargarDatos(); // Refrescar la tabla
+ eliminarZona(id: number) {
+  Swal.fire({
+    title: '¿Eliminar parcela?',
+    text: "Esta acción no se puede deshacer y se borrarán todos los registros.",
+    icon: 'warning',
+    showCancelButton: true,
+    background: '#0f172a', // Color pizarra oscuro como tu fondo
+    color: '#ffffff',
+    confirmButtonColor: '#ef4444', // Rojo
+    cancelButtonColor: '#334155', // Gris azulado
+    confirmButtonText: 'Sí, eliminar',
+    cancelButtonText: 'Cancelar',
+    customClass: {
+      popup: 'border border-white/10 rounded-none', // Para que siga tu estilo cuadrado
+    }
+  }).then((result) => {
+    if (result.isConfirmed) {
+      this.zonaService.eliminarZona(id).subscribe({
+        next: () => {
+          Swal.fire({
+            title: '¡Eliminada!',
+            text: 'La zona ha sido borrada del sistema.',
+            icon: 'success',
+            background: '#0f172a',
+            color: '#ffffff',
+            confirmButtonColor: '#10b981'
+          });
+          this.cargarDatosSegunRol();
+        },
+        error: (err) => {
+          Swal.fire('Error', 'No se pudo eliminar: ' + err.error, 'error');
+        }
+      });
+    }
+  });
+}
+
+  // --- CONTROL DE RIEGO (NUEVO) ---
+  encenderRiego(idZona: number) {
+    this.zonaService.iniciarRiego(idZona).subscribe({
+      next: () => {
+        console.log('Riego iniciado');
+        this.cargarDatosSegunRol(); // Para ver si el estado de la zona cambia
       },
-      error: (err) => alert('Error al crear zona: ' + err.error)
+      error: (err) => alert('Error al iniciar riego: ' + err.error)
     });
   }
+
+  apagarRiego(idZona: number) {
+    this.zonaService.finalizarRiego(idZona).subscribe({
+      next: () => {
+        console.log('Riego finalizado');
+        this.cargarDatosSegunRol();
+      },
+      error: (err) => alert('Error al finalizar riego: ' + err.error)
+    });
+  }
+
+
+  toggleUsuarios() {
+  this.verListaUsuarios.update(val => !val);
+}
 }

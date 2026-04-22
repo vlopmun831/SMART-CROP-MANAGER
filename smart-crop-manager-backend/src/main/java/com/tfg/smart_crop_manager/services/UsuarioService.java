@@ -83,7 +83,7 @@ public class UsuarioService implements UserDetailsService{
 		return this.usuarioRepository.save(usuarioBD);
 	}
 
-	public void delete(Integer id) {
+	public void deleteUsuario(Integer id) {
 		if (!this.usuarioRepository.existsById(id)) {
 			throw new UsuarioNotFoundException("El id del administrador no existe");
 		}

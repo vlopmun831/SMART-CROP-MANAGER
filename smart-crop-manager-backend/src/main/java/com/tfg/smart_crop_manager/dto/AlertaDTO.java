@@ -19,7 +19,7 @@ public class AlertaDTO {
     private Double max;
     private Double min;
     private LocalDateTime fecha;
-    
+    private String nombreUsuario;
     
     // Solo enviamos el ID y quizás el nombre de la zona para el agricultor
 

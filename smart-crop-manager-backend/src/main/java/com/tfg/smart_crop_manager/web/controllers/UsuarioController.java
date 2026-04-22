@@ -77,7 +77,7 @@ public class UsuarioController {
 	public ResponseEntity<?> delete(@PathVariable Integer id) {
 
 		try {
-			this.usuarioService.delete(id);
+			this.usuarioService.deleteUsuario(id);
 			return ResponseEntity.ok().build();
 		} catch (UsuarioNotFoundException ex) {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());

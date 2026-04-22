@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.tfg.smart_crop_manager.dto.AlertaDTO;
@@ -16,7 +17,6 @@ import com.tfg.smart_crop_manager.persistence.enums.TipoAlerta;
 import com.tfg.smart_crop_manager.persistence.repositories.AlertaRepository;
 import com.tfg.smart_crop_manager.services.exceptions.AlertaException;
 import com.tfg.smart_crop_manager.services.exceptions.AlertaNotFoundException;
-
 
 @Service
 public class AlertaService {
@@ -32,18 +32,21 @@ public class AlertaService {
 		zonaCultivoService.findById(idZona);
 		return this.alertaRepository.findByZonaCultivoIdOrderByFechaDesc(idZona);
 	}
+
 	public List<AlertaDTO> findPendientesByUsuario(Integer idUsuario) {
-	    // 1. Buscamos las entidades en la base de datos
-	    List<Alerta> alertas = alertaRepository.findPendientesByUsuarioId(idUsuario);
-	    
-	    // 2. Si no hay alertas, podemos devolver una lista vacía o lanzar una excepción según prefieras
-	    if (alertas.isEmpty()) {
-	        return new ArrayList<>();
-	    }
-	    
-	    // 3. Convertimos a DTO usando el mapper (esto evita el JSON infinito)
-	    return AlertaMapper.toDTOList(alertas);
+		// 1. Buscamos las entidades en la base de datos
+		List<Alerta> alertas = alertaRepository.findPendientesByUsuarioId(idUsuario);
+
+		// 2. Si no hay alertas, podemos devolver una lista vacía o lanzar una excepción
+		// según prefieras
+		if (alertas.isEmpty()) {
+			return new ArrayList<>();
+		}
+
+		// 3. Convertimos a DTO usando el mapper (esto evita el JSON infinito)
+		return AlertaMapper.toDTOList(alertas);
 	}
+
 	public Alerta findById(int id) {
 		if (!this.alertaRepository.existsById(id)) {
 			throw new AlertaNotFoundException("El id de la alerta no existe.");
@@ -51,8 +54,7 @@ public class AlertaService {
 		return this.alertaRepository.findById(id).get();
 	}
 
-	
-	//  Marcar alertas como resueltas
+	// Marcar alertas como resueltas
 	public Alerta marcarComoResuelta(int idAlerta) {
 		Alerta alertaBD = this.findById(idAlerta);
 
@@ -64,22 +66,35 @@ public class AlertaService {
 		return this.alertaRepository.save(alertaBD);
 	}
 
-	
+	public List<AlertaDTO> findAllAlertas() {
+		// 1. Buscamos todas las alertas de la base de datos (puedes usar findByEstado
+		// si solo quieres las PENDIENTES)
+		List<Alerta> alertas = alertaRepository.findAll(Sort.by(Sort.Direction.DESC, "fecha"));
+
+		// 2. Si está vacía devolvemos lista vacía
+		if (alertas.isEmpty()) {
+			return new ArrayList<>();
+		}
+
+		// 3. Usamos tu mapper para convertir todas a DTO de golpe
+		return AlertaMapper.toDTOList(alertas);
+	}
+
 	// --- MÉTODO PARA EL SISTEMA (AUTOMÁTICO) ---
 
-    public void registrarAlertaAutomatica(ZonaCultivo zona, TipoAlerta tipo, String mensaje) {
-        Alerta alerta = new Alerta();
-        alerta.setZonaCultivo(zona);
-        alerta.setTipoAlerta(tipo);
-        alerta.setDescripcion(mensaje);
-        alerta.setFecha(LocalDateTime.now());
-        alerta.setEstado(EstadoAlerta.PENDIENTE);
-        
-        // Inicializamos umbrales a 0 o null si tu entidad los obliga
-        alerta.setMin(0.0);
-        alerta.setMax(0.0);
+	public void registrarAlertaAutomatica(ZonaCultivo zona, TipoAlerta tipo, String mensaje) {
+		Alerta alerta = new Alerta();
+		alerta.setZonaCultivo(zona);
+		alerta.setTipoAlerta(tipo);
+		alerta.setDescripcion(mensaje);
+		alerta.setFecha(LocalDateTime.now());
+		alerta.setEstado(EstadoAlerta.PENDIENTE);
 
-        this.alertaRepository.save(alerta);
-    }
+		// Inicializamos umbrales a 0 o null si tu entidad los obliga
+		alerta.setMin(0.0);
+		alerta.setMax(0.0);
+
+		this.alertaRepository.save(alerta);
+	}
 
 }

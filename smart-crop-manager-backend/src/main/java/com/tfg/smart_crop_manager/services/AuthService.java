@@ -45,7 +45,8 @@ public class AuthService {
         String token = jwtUtils.create(usuario.getEmail());
 
         // 4. Devolver el DTO con los datos que necesita el frontend
-        return new TokenDTO(token, usuario.getEmail(), usuario.getRol().name());
+        return new TokenDTO(token, usuario.getEmail(), usuario.getRol().name(),usuario.getNombre(),
+                usuario.getId());
     }
     
  // DENTRO de AuthService.java
@@ -63,7 +64,7 @@ public class AuthService {
 
         // Generamos el token para que el usuario entre directamente [cite: 559, 593]
         String token = jwtUtils.create(nuevoUsuario.getEmail());
-        return new TokenDTO(token, nuevoUsuario.getEmail(), nuevoUsuario.getRol().name());
+        return new TokenDTO(token, nuevoUsuario.getEmail(), nuevoUsuario.getRol().name(), nuevoUsuario.getNombre(), nuevoUsuario.getId());
     }
 
     public TokenDTO refresh(String email) {
@@ -72,6 +73,6 @@ public class AuthService {
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
                 
         String nuevoToken = jwtUtils.create(usuario.getEmail());
-        return new TokenDTO(nuevoToken, usuario.getEmail(), usuario.getRol().name());
+        return new TokenDTO(nuevoToken, usuario.getEmail(), usuario.getRol().name(),usuario.getNombre(), usuario.getId());
     }
 }

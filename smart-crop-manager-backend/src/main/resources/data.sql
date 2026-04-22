@@ -31,3 +31,14 @@ INSERT INTO alerta (tipo_alerta, descripcion, max, min, estado, fecha, id_zona) 
 ('SUELO_SECO', 'Humedad crítica en tomates', 80.0, 30.0, 'PENDIENTE', NOW(), 3),
 ('CALOR_EXTREMO', 'Aviso de temperatura alta', 35.0, 10.0, 'RESUELTA', DATE_SUB(NOW(), INTERVAL 1 DAY), 1),
 ('FALLO_SENSOR', 'Sensor de humedad no responde', NULL, NULL, 'IGNORADA', NOW(), 2);
+('SUELO_SECO', 'Nivel crítico de sequía en Sector Sur', 75.0, 20.0, 'PENDIENTE', NOW(), 1),
+('CALOR_EXTREMO', 'Sobrecalentamiento en invernadero principal', 45.0, 15.0, 'PENDIENTE', NOW(), 2),
+('FALLO_SENSOR', 'Sensor de humedad no responde en zona 3', NULL, NULL, 'PENDIENTE', DATE_SUB(NOW(), INTERVAL 1 HOUR), 3),
+
+-- Ignoradas (Gris)
+('RIESGO_HONGOS', 'Humedad ambiental alta (Falsa alarma por lluvia)', 90.0, 10.0, 'IGNORADA', DATE_SUB(NOW(), INTERVAL 3 HOUR), 1),
+('AIRE_MUY_SECO', 'Baja humedad relativa en el ambiente', NULL, NULL, 'IGNORADA', DATE_SUB(NOW(), INTERVAL 1 DAY), 2),
+
+-- Resueltas (Verde)
+('PRONOSTICO_LLUVIA', 'Riego cancelado por lluvia prevista', 100.0, 0.0, 'RESUELTA', DATE_SUB(NOW(), INTERVAL 5 HOUR), 2),
+('SUELO_ENCHARCADO', 'Drenaje completado con éxito', 95.0, 40.0, 'RESUELTA', DATE_SUB(NOW(), INTERVAL 12 HOUR), 1);

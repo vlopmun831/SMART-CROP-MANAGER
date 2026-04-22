@@ -19,4 +19,10 @@ export class UsuarioService {
   crearUsuario(usuario: any): Observable<any> {
     return this.http.post<any>(this.API_URL, usuario);
   }
+
+
+
+eliminarUsuario(id: number): Observable<void> {
+  return this.http.delete<void>(`${this.API_URL}/${id}`);
+}
 }

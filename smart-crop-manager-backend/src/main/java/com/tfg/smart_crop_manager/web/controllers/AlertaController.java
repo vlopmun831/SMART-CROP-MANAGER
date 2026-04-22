@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tfg.smart_crop_manager.dto.AlertaDTO;
+import com.tfg.smart_crop_manager.mappers.AlertaMapper;
+import com.tfg.smart_crop_manager.persistence.entities.Alerta;
 import com.tfg.smart_crop_manager.services.AlertaService;
 import com.tfg.smart_crop_manager.services.exceptions.AlertaException;
 import com.tfg.smart_crop_manager.services.exceptions.AlertaNotFoundException;
@@ -23,7 +25,12 @@ public class AlertaController {
 	
 	@Autowired
     private AlertaService alertaService;
-	
+	//Obtener todas las alertas pendientes
+	@GetMapping
+	public ResponseEntity<List<AlertaDTO>> getAll() {
+	    List<AlertaDTO> alertas = alertaService.findAllAlertas();
+	    return ResponseEntity.ok(alertas);
+	}
 	
 	// Obtener alertas sin resolver de todas las zonas de un usuario
 	@GetMapping("/usuario/{idUsuario}/pendientes")
@@ -53,7 +60,8 @@ public class AlertaController {
     @PutMapping("/{id}/resolver")
     public ResponseEntity<?> resolverAlerta(@PathVariable Integer id) {
         try {
-            return ResponseEntity.ok(this.alertaService.marcarComoResuelta(id));
+        	Alerta resuelta = this.alertaService.marcarComoResuelta(id);
+            return ResponseEntity.ok(AlertaMapper.toDTO(resuelta));
         } catch (AlertaNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (AlertaException e) {

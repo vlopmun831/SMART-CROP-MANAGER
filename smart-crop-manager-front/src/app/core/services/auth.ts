@@ -6,6 +6,7 @@ interface AuthResponse {
   token: string;
   nombre: string;
   rol: string;
+  id: number;
 }
 
 @Injectable({
@@ -17,7 +18,8 @@ export class AuthService {
 
   public isAuthenticated = signal<boolean>(!!localStorage.getItem('token'));
   public userRole = signal<string | null>(localStorage.getItem('userRole'));
-  public userName = signal<string | null>(localStorage.getItem('email'));
+  public userName = signal<string | null>(localStorage.getItem('username'));
+  public userId = signal<number | null>(Number(localStorage.getItem('userId')) || null)
 
   login(credentials: { email: string, password: string }) {
     return this.http.post<AuthResponse>(`${this.API_URL}/login`, credentials).pipe(
@@ -25,10 +27,13 @@ export class AuthService {
         localStorage.setItem('token', response.token);
         localStorage.setItem('userRole', response.rol); // Cambia 'rol' por el nombre exacto que venga de tu Java
         localStorage.setItem('userName', response.nombre);
+        localStorage.setItem('userId', response.id.toString());
 
+      
         this.isAuthenticated.set(true);
         this.userRole.set(response.rol);
         this.userName.set(response.nombre);
+        this.userId.set(response.id);
       })
     );
   }
@@ -38,5 +43,6 @@ export class AuthService {
     this.isAuthenticated.set(false);
     this.userRole.set(null);
     this.userName.set(null);
+    this.userId.set(null);
   }
 }

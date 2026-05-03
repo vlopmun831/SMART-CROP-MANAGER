@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common'; 
 import { AuthService } from '../../core/services/auth'; 
 import { ZonaService } from '../../core/services/zona/zona';
@@ -24,6 +24,18 @@ export class DashboardComponent implements OnInit {
   // 2. Signals para los datos
   public zonas = signal<any[]>([]);
   public usuarios = signal<any[]>([]);
+
+  busquedaOperario = signal(''); 
+
+  // 2. EL COMPUTED - Justo debajo de las señales
+  // Importante: Va fuera del constructor y fuera de cualquier función
+  operariosFiltrados = computed(() => {
+    const query = this.busquedaOperario().toLowerCase();
+    return this.usuarios().filter(u => 
+      u.rol !== 'ADMIN' && 
+      (u.nombre.toLowerCase().includes(query) || u.email.toLowerCase().includes(query))
+    );
+  });
   public alertasPendientes = signal<any[]>([]);
 
   public totalZonas = signal<number>(0);
@@ -43,7 +55,7 @@ export class DashboardComponent implements OnInit {
     humSueloMinConfig: '',
     humSueloMaxConfig: '',
     tempMaxConfig: '',
-    usuario: { id: null as number | null }
+    usuario: { id: null as any }
   };
 
   public nuevoUsuario = {
@@ -79,7 +91,14 @@ export class DashboardComponent implements OnInit {
   const soloRojas = data.filter(a => a.estado === 'PENDIENTE').length;
   this.totalAlertasGlobales.set(soloRojas); // Este es el que usaremos en el KPI
 });
-  
+  this.usuarioService.getUsuarios().subscribe({
+    next: (data) => {
+      // Filtramos para que solo lleguen los agricultores y no el Admin si quieres
+      this.usuarios.set(data); 
+      console.log('Operarios cargados:', data); // Mira la consola para estar segura
+    },
+    error: (err) => console.error('Error al cargar operarios', err)
+  });
 
 }
     else if (rol === 'USUARIO' && userId) {
@@ -89,6 +108,12 @@ export class DashboardComponent implements OnInit {
   }
 
   // --- GESTIÓN DE ALERTAS ---
+
+  seleccionarOperario(usuario: any) {
+    this.nuevaZona.usuario.id = usuario.id;
+    this.busquedaOperario.set(usuario.nombre); 
+
+  }
  resolverAlerta(idAlerta: number) {
   // 1. Opcional: Podrías poner un confirm aquí también, pero suele ser mejor acción directa
   this.alertaService.cambiarEstado(idAlerta, 'RESUELTA').subscribe({
@@ -160,7 +185,6 @@ export class DashboardComponent implements OnInit {
 eliminarUsuario(id: number, nombre: string) {
   Swal.fire({
     title: `¿Eliminar a ${nombre}?`,
-    // ... resto del Swal ...
   }).then((result) => {
     if (result.isConfirmed) {
       // ⚠️ AQUÍ: 'usuarioService' debe estar inyectado en el constructor o como propiedad

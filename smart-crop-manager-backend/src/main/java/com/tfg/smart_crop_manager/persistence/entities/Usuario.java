@@ -16,6 +16,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -33,6 +35,8 @@ public class Usuario {
 	  	
 	    private String nombre;
 
+	    @Email(message = "Debe proporcionar un email válido")
+	    @NotBlank(message = "El email es obligatorio")
 	    @Column(nullable = false, unique = true,length = 100 )
 	    private String email;
 

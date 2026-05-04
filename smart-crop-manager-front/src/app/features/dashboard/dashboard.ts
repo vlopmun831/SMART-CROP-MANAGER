@@ -26,6 +26,8 @@ export class DashboardComponent implements OnInit {
   public usuarios = signal<any[]>([]);
 
   busquedaOperario = signal(''); 
+  confirmarPassword = signal('');
+
 
   // 2. EL COMPUTED - Justo debajo de las señales
   // Importante: Va fuera del constructor y fuera de cualquier función
@@ -151,17 +153,28 @@ export class DashboardComponent implements OnInit {
   }
 
   guardarUsuario() {
+    // Validamos que las contraseñas coincidan
+  if (this.nuevoUsuario.password !== this.confirmarPassword()) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Error de validación',
+      text: 'Las contraseñas no coinciden.',
+      background: '#0f172a',
+      color: '#ffffff'
+    });
+    return; // Detenemos la ejecución
+  }
   this.usuarioService.crearUsuario(this.nuevoUsuario).subscribe({
     next: (resp) => {
       // ⚡ SweetAlert de éxito
       Swal.fire({
         title: '¡Registro Exitoso!',
-        text: `El agricultor ${this.nuevoUsuario.nombre} ha sido dado de alta.`,
+        text: `El operador ${this.nuevoUsuario.nombre} ha sido dado de alta.`,
         icon: 'success',
         background: '#0f172a',
         color: '#ffffff',
         confirmButtonColor: '#10b981',
-        timer: 2000, // Se cierra solo a los 2 segundos
+        timer: 2000, 
         showConfirmButton: false
       });
 
@@ -197,10 +210,10 @@ eliminarUsuario(id: number, nombre: string) {
     }
   });
 }
-  limpiarFormUsuario() {
-    this.nuevoUsuario = { nombre: '', email: '', password: '', rol: 'USUARIO' };
-  }
-
+ limpiarFormUsuario() {
+  this.nuevoUsuario = { nombre: '', email: '', password: '' , rol: 'USUARIO'}; // Limpia el objeto del backend
+  this.confirmarPassword.set(''); // ✨ ¡IMPORTANTE! Limpia la señal de confirmación
+}
   // --- GESTIÓN DE ZONAS (ADMIN) ---
   crearNuevaZona() {
     this.verFormZona.set(true);

@@ -51,6 +51,11 @@ public class AuthService {
     
  // DENTRO de AuthService.java
     public TokenDTO registrar(RegisterDTO registerDto) {
+    	
+    	if (usuarioRepository.findByEmail(registerDto.getEmail()).isPresent()) {
+            throw new RuntimeException("El correo electrónico ya está registrado");
+        }
+    	
         Usuario nuevoUsuario = new Usuario();
         nuevoUsuario.setNombre(registerDto.getNombre());
         nuevoUsuario.setEmail(registerDto.getEmail());

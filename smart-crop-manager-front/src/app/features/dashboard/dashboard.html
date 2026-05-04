@@ -107,16 +107,43 @@
       </div>
 
       @if (verFormUsuario()) {
-        <section class="animate-fade-in bg-black/60 border border-emerald-500/30 p-8 mb-12">
+        <section class="animate-fade-in bg-black/60 border border-emerald-500/30 p-8 mb-12 backdrop-blur-xl rounded-sm">
+          <h2 class="text-xl font-light tracking-widest text-white uppercase mb-6">Registrar <span class="text-emerald-500 font-bold">Nuevo Operario</span></h2>
+          
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <input [(ngModel)]="nuevoUsuario.nombre" placeholder="Nombre" class="bg-white/5 border border-white/10 p-4 text-white">
-            <input [(ngModel)]="nuevoUsuario.email" placeholder="Email" class="bg-white/5 border border-white/10 p-4 text-white">
-            <input [(ngModel)]="nuevoUsuario.password" type="password" placeholder="Password" class="bg-white/5 border border-white/10 p-4 text-white">
-            <button (click)="guardarUsuario()" class="bg-emerald-600 text-white font-bold py-4">Guardar</button>
+            <!-- Nombre y Email -->
+            <input [(ngModel)]="nuevoUsuario.nombre" placeholder="Nombre Completo" class="bg-white/5 border border-white/10 p-4 text-white outline-none focus:border-emerald-500">
+            <input [(ngModel)]="nuevoUsuario.email" placeholder="Email" class="bg-white/5 border border-white/10 p-4 text-white outline-none focus:border-emerald-500">
+            
+            <!-- Primera Contraseña -->
+            <input [(ngModel)]="nuevoUsuario.password" type="password" placeholder="Contraseña" 
+                   class="bg-white/5 border border-white/10 p-4 text-white outline-none focus:border-emerald-500">
+            
+            <!-- SEGUNDA CONTRASEÑA (Confirmación) -->
+            <div class="flex flex-col gap-1">
+              <input [ngModel]="confirmarPassword()" (ngModelChange)="confirmarPassword.set($event)" 
+                     type="password" placeholder="Confirmar Contraseña" 
+                     class="bg-white/5 border p-4 text-white outline-none transition-all"
+                     [ngClass]="confirmarPassword() !== '' && nuevoUsuario.password !== confirmarPassword() ? 'border-red-500' : 'border-white/10'">
+              
+              <!-- Mensaje de error dinámico -->
+              @if (confirmarPassword() !== '' && nuevoUsuario.password !== confirmarPassword()) {
+                <span class="text-[10px] text-red-500 font-bold italic ml-1">⚠️ Las contraseñas no coinciden</span>
+              }
+            </div>
+
+            <!-- Botones de acción -->
+            <div class="md:col-span-2 flex gap-4 mt-2">
+              <button (click)="guardarUsuario()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold uppercase py-4 transition-all">
+                Finalizar Registro
+              </button>
+              <button (click)="verFormUsuario.set(false)" class="px-8 border border-white/10 text-white uppercase text-[10px] hover:bg-white/5">
+                Cancelar
+              </button>
+            </div>
           </div>
         </section>
       }
-
       @if (verFormZona()) {
         <section class="animate-fade-in bg-black/60 border border-blue-500/30 p-8 rounded-sm mb-12 backdrop-blur-xl">
           <h2 class="text-xl font-light tracking-widest text-white uppercase mb-6">

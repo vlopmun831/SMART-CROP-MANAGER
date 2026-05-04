@@ -17,6 +17,8 @@ import com.tfg.smart_crop_manager.dto.TokenDTO;
 import com.tfg.smart_crop_manager.persistence.repositories.UsuarioRepository;
 import com.tfg.smart_crop_manager.services.AuthService;
 import com.tfg.smart_crop_manager.web.config.JwtUtils;
+
+import jakarta.validation.Valid;
 @CrossOrigin(origins = "http://localhost:4200")
 @RestController
 @RequestMapping("/auth") // Todas las rutas empezarán por http://localhost:8080/auth
@@ -35,7 +37,7 @@ public class AuthController {
     private AuthService authService;
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginDTO loginDto) {
+    public ResponseEntity<?> login( @Valid @RequestBody LoginDTO loginDto) {
         try {
             TokenDTO tokenDto = authService.login(loginDto);
             return ResponseEntity.ok(tokenDto);

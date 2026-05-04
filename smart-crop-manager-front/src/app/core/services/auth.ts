@@ -1,6 +1,7 @@
 import { Injectable, signal, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { tap } from 'rxjs';
+import { Router } from '@angular/router';
 
 interface AuthResponse {
   token: string;
@@ -13,6 +14,8 @@ interface AuthResponse {
   providedIn: 'root'
 })
 export class AuthService {
+
+  private router = inject(Router);
   private http = inject(HttpClient);
   private API_URL = 'http://localhost:8099/auth'; 
 
@@ -44,5 +47,7 @@ export class AuthService {
     this.userRole.set(null);
     this.userName.set(null);
     this.userId.set(null);
+
+    this.router.navigate(['/login']);
   }
 }

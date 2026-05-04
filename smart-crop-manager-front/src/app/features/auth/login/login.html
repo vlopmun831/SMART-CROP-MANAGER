@@ -15,12 +15,20 @@
     
     <form class="space-y-6" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
       <div class="space-y-5">
-        <div>
-          <label class="block text-[10px] uppercase tracking-widest text-slate-400 mb-2 font-semibold">Identificación de Usuario</label>
-          <input formControlName="email" type="text"
-            class="w-full bg-white/5 border border-white/10 px-4 py-3 rounded-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-emerald-500/50 focus:bg-white/10 transition-all font-mono text-sm" 
-            placeholder="admin@smartcrop.es">
-        </div>
+       <div>
+  <label class="block text-[10px] uppercase tracking-widest text-slate-400 mb-2 font-semibold">Identificación de Usuario</label>
+  <input formControlName="email" type="email"
+    class="w-full bg-white/5 border px-4 py-3 rounded-sm text-white placeholder:text-slate-600 focus:outline-none transition-all font-mono text-sm"
+    [ngClass]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched ? 'border-red-500/50 bg-red-500/5' : 'border-white/10 focus:border-emerald-500/50 focus:bg-white/10'"
+    placeholder="admin@smartcrop.es">
+  
+  <!-- Mensaje de error dinámico -->
+  @if (loginForm.get('email')?.invalid && loginForm.get('email')?.touched) {
+    <p class="text-[10px] text-red-500 mt-2 italic animate-fade-in">
+      ⚠️ Formato de correo electrónico no válido
+    </p>
+  }
+</div>
 
         <div>
           <label class="block text-[10px] uppercase tracking-widest text-slate-400 mb-2 font-semibold">Clave de Acceso</label>

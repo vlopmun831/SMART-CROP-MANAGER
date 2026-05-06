@@ -7,27 +7,28 @@ import { Observable } from 'rxjs';
 })
 export class AlertaService {
   private http = inject(HttpClient);
-  // Asegúrate de que este puerto y ruta sean los de tu API de Java
-  private API_URL = 'http://localhost:8099/alertas'; 
+  private API_URL = 'http://localhost:8099/alertas';
 
   /**
-   * Obtiene las alertas pendientes de un agricultor específico
-   * Corresponde a tu Query en Java: findPendientesByUsuarioId
+   * Obtiene las alertas pendientes de un usuario específico
+   * Endpoint según Postman: GET /alertas/usuario/{id}/pendientes
    */
   getAlertasPendientes(idUsuario: number): Observable<any[]> {
-    return this.http.get<any[]>(`${this.API_URL}/pendientes/${idUsuario}`);
-  }
-
-  getAlertasGlobales(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.API_URL}`); 
-    // Nota: Si en Postman la ruta para ver todas es /alertas/todas, cámbialo aquí.
+    return this.http.get<any[]>(`${this.API_URL}/usuario/${idUsuario}/pendientes`);
   }
 
   /**
-   * Cambia el estado de una alerta (ej. de PENDIENTE a RESUELTA)
+   * Obtiene TODAS las alertas del sistema (para el panel ADMIN)
    */
- cambiarEstado(idAlerta: number, nuevoEstado: string): Observable<any> {
-  // AJUSTADO A TU CONTROLLER: /alertas/{id}/resolver
-  return this.http.put(`${this.API_URL}/${idAlerta}/resolver`, {}); 
-}
+  getAlertasGlobales(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.API_URL}`);
+  }
+
+  /**
+   * Marca una alerta como resuelta
+   * Endpoint según Postman: PUT /alertas/{id}/resolver
+   */
+  resolverAlerta(idAlerta: number): Observable<any> {
+    return this.http.put(`${this.API_URL}/${idAlerta}/resolver`, {});
+  }
 }

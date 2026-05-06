@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
 })
 export class ZonaService {
   private http = inject(HttpClient);
-  private API_URL = 'http://localhost:8099/zonas'; // Ajusta si tu puerto es distinto
+  private API_URL = 'http://localhost:8099/zonas';
 
   // --- MÉTODOS DE CONSULTA ---
 
@@ -37,22 +37,26 @@ export class ZonaService {
     return this.http.delete(`${this.API_URL}/${id}`);
   }
 
-  // --- MÉTODOS DE OPERACIÓN (RIEGO) ---
-  // Según tu Postman: POST para iniciar, PUT para finalizar
-
+  // --- RIEGO ---
+  // POST /riego/zona/{zonaId}/iniciar  → inicia y devuelve el objeto Riego con su id
   iniciarRiego(idZona: number): Observable<any> {
-    // Si tu backend espera un objeto vacío o datos, lo enviamos aquí
-    return this.http.post(`${this.API_URL}/${idZona}/riego/iniciar`, {});
+    return this.http.post<any>(`http://localhost:8099/riego/zona/${idZona}/iniciar`, {});
   }
 
-  finalizarRiego(idZona: number): Observable<any> {
-    return this.http.put(`${this.API_URL}/${idZona}/riego/finalizar`, {});
+  // PUT /riego/{riegoId}/finalizar  → usa el ID del registro de riego, NO el de la zona
+  finalizarRiego(idRiego: number): Observable<any> {
+    return this.http.put<any>(`http://localhost:8099/riego/${idRiego}/finalizar`, {});
   }
 
-  // --- MÉTODOS DE DATOS HISTÓRICOS ---
+  // --- HISTÓRICO DE DATOS DE SENSORES ---
 
+  // GET /registros/zona/{zonaId}  → historial completo
   getHistorialDatos(idZona: number): Observable<any[]> {
-    // Este servirá para las gráficas que haremos después
     return this.http.get<any[]>(`http://localhost:8099/registros/zona/${idZona}`);
+  }
+
+  // GET /registros/zona/{zonaId}/ultimo  → último dato (para el dashboard en tiempo real)
+  getUltimoRegistro(idZona: number): Observable<any> {
+    return this.http.get<any>(`http://localhost:8099/registros/zona/${idZona}/ultimo`);
   }
 }

@@ -10,4 +10,6 @@ public interface RiegoRepository extends JpaRepository<Riego, Integer>{
 
 	// Consultar el historial de riego de una zona (Requisito de Usuario)
     List<Riego> findByZonaCultivoIdOrderByFechaDescHoraInicioDesc(Integer idZona);
+    List<Riego> findByZonaCultivoIdAndHoraFinIsNull(Integer idZona);
+    
 }

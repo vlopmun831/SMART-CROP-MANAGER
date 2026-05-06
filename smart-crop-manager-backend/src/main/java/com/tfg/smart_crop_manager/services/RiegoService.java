@@ -58,6 +58,25 @@ public class RiegoService {
 		return this.riegoRepository.save(nuevoRiego);
 	}
     
+	public Riego finalizarRiegoActivoPorZona(Integer idZona) {
+        // 1. Buscamos el riego abierto de esta zona
+        List<Riego> riegosAbiertos = this.riegoRepository.findByZonaCultivoIdAndHoraFinIsNull(idZona);
+        
+        if (riegosAbiertos.isEmpty()) {
+            throw new RiegoNotFoundException("No hay ningún riego activo en esta zona para detener.");
+        }
+
+        // 2. Lo cerramos (o los cerramos si por error hubiera más de uno)
+        LocalDateTime ahora = LocalDateTime.now();
+        Riego ultimoCerrado = null;
+        
+        for (Riego riego : riegosAbiertos) {
+            riego.setHoraFin(ahora);
+            ultimoCerrado = this.riegoRepository.save(riego);
+        }
+        
+        return ultimoCerrado;
+    }
     // Finalizar/Detener el riego (actualizando el registro existente)
     public Riego finalizarRiego(Integer idRiego, LocalDateTime horaFin) {
         Riego riegoBD = this.findById(idRiego);

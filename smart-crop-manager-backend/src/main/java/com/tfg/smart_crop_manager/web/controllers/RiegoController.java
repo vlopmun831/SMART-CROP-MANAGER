@@ -44,6 +44,18 @@ public class RiegoController {
         }
     }
     
+ // Nuevo endpoint: Finalizar riego directamente por el ID de la Zona
+    @PutMapping("/zona/{idZona}/finalizar")
+    public ResponseEntity<?> finalizarRiegoPorZona(@PathVariable Integer idZona) {
+        try {
+            // Asumiendo que tu RiegoService tiene un método que busca el riego activo de una zona y lo cierra
+            Riego finalizado = this.riegoService.finalizarRiegoActivoPorZona(idZona);
+            return ResponseEntity.ok(RiegoMapper.toDTO(finalizado));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+    
     // Controlar el riego (Finalizar riego)
     @PutMapping("/{idRiego}/finalizar")
     public ResponseEntity<?> finalizarRiego(

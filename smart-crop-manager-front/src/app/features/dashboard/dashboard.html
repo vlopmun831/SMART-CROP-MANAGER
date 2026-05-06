@@ -1,290 +1,619 @@
-<div class="min-h-screen bg-cover bg-fixed bg-center relative font-sans" 
-     style="background-image: url('https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?q=80&w=2070&auto=format&fit=crop');">
-  
-  <div class="min-h-screen bg-slate-950/80 backdrop-blur-md p-6 md:p-12">
-    
-    <header class="mb-12 flex flex-col md:flex-row md:items-end justify-between pb-8 border-b border-white/10">
+<div class="min-h-screen bg-cover bg-fixed bg-center relative font-sans"
+  style="background-image: url('https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?q=80&w=2070&auto=format&fit=crop');">
+  <div class="min-h-screen bg-slate-950/80 backdrop-blur-md p-6 md:p-10">
+
+    <!-- HEADER -->
+    <header class="mb-10 flex flex-col md:flex-row md:items-end justify-between pb-6 border-b border-white/10">
       <div>
         <h1 class="text-4xl font-light tracking-tighter text-white">
           CONTROL <span class="font-bold text-emerald-500 italic uppercase">{{ authService.userRole() }}</span>
         </h1>
         <div class="flex items-center gap-4 mt-2">
-          <span class="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/30 font-bold tracking-widest uppercase">Sistema v1.5</span>
-          <p class="text-slate-500 text-xs uppercase tracking-widest font-medium italic">Operador: {{ authService.userName() }}</p>
+          <span
+            class="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/30 font-bold tracking-widest uppercase">Sistema
+            v1.5</span>
+          <p class="text-slate-500 text-xs uppercase tracking-widest font-medium italic">Operador: {{
+            authService.userName() }}</p>
         </div>
       </div>
-      <div class="text-right">
-        <button (click)="authService.logout()" class="text-[10px] bg-red-500/10 hover:bg-red-500/20 text-red-400 px-4 py-2 rounded border border-red-500/20 transition-all font-bold uppercase tracking-widest">
+      <div class="text-right mt-4 md:mt-0 flex items-center gap-3">
+        @if (alertasPendientes().length > 0 && authService.userRole() === 'USUARIO') {
+        <span
+          class="animate-pulse text-[10px] bg-red-500/20 text-red-400 px-3 py-1 rounded border border-red-500/30 font-bold tracking-widest uppercase">
+          {{ alertasPendientes().length }} ALERTA(S)
+        </span>
+        }
+        <button (click)="authService.logout()"
+          class="text-[10px] bg-red-500/10 hover:bg-red-500/20 text-red-400 px-4 py-2 rounded border border-red-500/20 transition-all font-bold uppercase tracking-widest">
           Cerrar Sesión
         </button>
       </div>
     </header>
 
+    <!-- ------------------- PANEL ADMIN ------------------- -->
     @if (authService.userRole() === 'ADMIN') {
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10 animate-fade-in">
-        <div class="bg-black/40 border-t-2 border-emerald-500 p-6 shadow-xl backdrop-blur-md">
-          <p class="text-[10px] uppercase tracking-[0.2em] text-slate-500 font-bold mb-2">Infraestructura</p>
-          <div class="flex items-baseline gap-2 text-white">
-            <span class="text-4xl font-mono font-bold">{{ totalZonas() }}</span>
-            <span class="text-emerald-500 text-sm font-medium tracking-tight">Zonas Registradas</span>
-          </div>
-        </div>
 
-        <div (click)="toggleUsuarios()" 
-             class="bg-black/40 border-t-2 border-blue-500 p-6 shadow-xl backdrop-blur-md cursor-pointer hover:bg-blue-500/10 transition-all group">
-          <p class="text-[10px] uppercase tracking-[0.2em] text-slate-500 font-bold mb-2 group-hover:text-blue-400">Comunidad</p>
-          <div class="flex items-baseline gap-2 text-white">
-            <span class="text-4xl font-mono font-bold">{{ totalUsuarios() }}</span>
-            <span class="text-blue-500 text-sm font-medium tracking-tight">Operarios Activos</span>
-            <span class="ml-auto text-blue-500 transform transition-transform" [class.rotate-180]="verListaUsuarios()">▼</span>
-          </div>
-        </div>
-
-        <div class="bg-black/40 border-t-2 border-red-500 p-6 shadow-xl backdrop-blur-md">
-          <p class="text-[10px] uppercase tracking-[0.2em] text-slate-500 font-bold mb-2">Estado de Red</p>
-          <div class="flex items-baseline gap-2">
-            <span class="text-4xl font-mono font-bold text-red-500">{{ totalAlertasGlobales() }}</span>
-            <span class="text-slate-400 text-sm font-medium tracking-tight">Alertas Críticas</span>
-          </div>
+    <!-- KPIs -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 animate-fade-in">
+      <div class="bg-black/40 border-t-2 border-emerald-500 p-6 shadow-xl backdrop-blur-md">
+        <p class="text-[10px] uppercase tracking-[0.2em] text-slate-500 font-bold mb-2">Infraestructura</p>
+        <div class="flex items-baseline gap-2 text-white">
+          <span class="text-4xl font-mono font-bold">{{ totalZonas() }}</span>
+          <span class="text-emerald-500 text-sm font-medium">Zonas Registradas</span>
         </div>
       </div>
-
-      @if (verListaUsuarios()) {
-        <div class="mb-10 animate-fade-in">
-          <div class="bg-blue-900/10 border border-blue-500/30 backdrop-blur-xl rounded-sm overflow-hidden">
-            <div class="bg-blue-500/20 px-6 py-3 border-b border-blue-500/30 flex justify-between items-center">
-              <h3 class="text-[10px] font-bold text-blue-400 uppercase tracking-widest">Listado de Personal</h3>
-              <button (click)="verListaUsuarios.set(false)" class="text-blue-400 hover:text-white text-xs">Cerrar ✕</button>
-            </div>
-            <table class="w-full text-left text-white">
-              <tbody class="divide-y divide-white/5">
-                @for (u of usuarios(); track u.id) {
-                  @if (u.rol !== 'ADMIN') {
-                    <tr class="hover:bg-blue-500/5 transition-colors">
-                      <td class="px-6 py-4">
-                        <p class="text-sm font-bold">{{ u.nombre }}</p>
-                        <p class="text-[10px] text-slate-500">{{ u.email }}</p>
-                      </td>
-                      <td class="px-6 py-4 text-right">
-                        <button (click)="eliminarUsuario(u.id, u.nombre)" class="text-red-500 hover:bg-red-500 hover:text-white px-3 py-1 rounded border border-red-500/30 text-[10px] font-bold uppercase transition-all">Eliminar</button>
-                      </td>
-                    </tr>
-                  }
-                }
-              </tbody>
-            </table>
-          </div>
+      <div class="bg-black/40 border-t-2 border-blue-500 p-6 shadow-xl backdrop-blur-md">
+        <p class="text-[10px] uppercase tracking-[0.2em] text-slate-500 font-bold mb-2">Comunidad</p>
+        <div class="flex items-baseline gap-2 text-white">
+          <span class="text-4xl font-mono font-bold">{{ totalUsuarios() }}</span>
+          <span class="text-blue-500 text-sm font-medium">Operarios Activos</span>
         </div>
+      </div>
+      <div class="bg-black/40 border-t-2 border-red-500 p-6 shadow-xl backdrop-blur-md">
+        <p class="text-[10px] uppercase tracking-[0.2em] text-slate-500 font-bold mb-2">Estado de Red</p>
+        <div class="flex items-baseline gap-2">
+          <span class="text-4xl font-mono font-bold text-red-500">{{ totalAlertasGlobales() }}</span>
+          <span class="text-slate-400 text-sm font-medium">Alertas Críticas</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABS ADMIN -->
+    <div class="flex gap-0 mb-8 border-b border-white/10">
+      <button (click)="pestanaAdmin.set('zonas')"
+        class="px-6 py-3 text-[10px] font-bold uppercase tracking-widest transition-all"
+        [ngClass]="pestanaAdmin() === 'zonas' ? 'text-emerald-400 border-b-2 border-emerald-500' : 'text-slate-500 hover:text-white'">
+        Parcelas
+      </button>
+      <button (click)="pestanaAdmin.set('usuarios')"
+        class="px-6 py-3 text-[10px] font-bold uppercase tracking-widest transition-all"
+        [ngClass]="pestanaAdmin() === 'usuarios' ? 'text-blue-400 border-b-2 border-blue-500' : 'text-slate-500 hover:text-white'">
+        Operarios
+      </button>
+      <button (click)="pestanaAdmin.set('alertas')"
+        class="px-6 py-3 text-[10px] font-bold uppercase tracking-widest transition-all relative"
+        [ngClass]="pestanaAdmin() === 'alertas' ? 'text-red-400 border-b-2 border-red-500' : 'text-slate-500 hover:text-white'">
+        Alertas
+        @if (totalAlertasGlobales() > 0) {
+        <span
+          class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-[8px] text-white font-bold flex items-center justify-center">{{
+          totalAlertasGlobales() }}</span>
+        }
+      </button>
+    </div>
+
+    <!-- TAB: PARCELAS -->
+    @if (pestanaAdmin() === 'zonas') {
+    <div class="animate-fade-in">
+      <!-- Botones de acción -->
+      @if (!verFormZona() && !verFormEditarZona()) {
+      <div class="flex gap-3 mb-6">
+        <button (click)="crearNuevaZona()"
+          class="bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] uppercase font-bold px-8 py-3 transition-all">
+          + Configurar Parcela
+        </button>
+      </div>
       }
 
-      @if (alertasPendientes().length > 0) {
-        <div class="mb-10 animate-fade-in">
-          <h2 class="text-xs font-bold text-red-500 uppercase tracking-[0.4em] mb-4 italic">⚠️ Monitorización Global</h2>
-          <div class="grid grid-cols-1 gap-3">
-            @for (alerta of alertasPendientes(); track alerta.id) {
-              <div class="p-4 flex justify-between items-center backdrop-blur-xl border transition-all"
-                   [ngClass]="alerta.estado === 'PENDIENTE' ? 'bg-red-950/20 border-red-500/30' : 'bg-emerald-950/10 border-emerald-500/10 opacity-60'">
-                <div>
-                  <div class="flex items-center gap-2 mb-1">
-                    <p class="text-[10px] font-bold uppercase" [ngClass]="alerta.estado === 'PENDIENTE' ? 'text-red-400' : 'text-emerald-400'">{{ alerta.tipo }}</p>
-                    <span class="text-[8px] px-2 py-0.5 rounded-full text-black font-bold uppercase" [ngClass]="alerta.estado === 'PENDIENTE' ? 'bg-red-500' : 'bg-emerald-500'">{{ alerta.estado }}</span>
-                  </div>
-                  <p class="text-sm text-slate-300">{{ alerta.descripcion }} en <b>{{ alerta.nombreZona }}</b></p>
-                  <p class="text-[10px] mt-1 text-slate-500 font-bold uppercase">Responsable: <span class="text-slate-300">{{ alerta.nombreUsuario ?? 'Sistema' }}</span></p>
-                </div>
-                @if (alerta.estado === 'PENDIENTE') {
-                  <button (click)="resolverAlerta(alerta.id)" class="text-[9px] border border-red-500/40 text-red-500 hover:bg-red-600 hover:text-white px-6 py-2 uppercase font-bold transition-all">Resolver</button>
-                } @else { <span class="text-emerald-500 p-2">✓</span> }
+      <!-- Formulario crear zona -->
+      @if (verFormZona()) {
+      <section class="animate-fade-in bg-black/60 border border-blue-500/30 p-8 mb-8 backdrop-blur-xl rounded-sm">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-xl font-light tracking-widest text-white uppercase">Nueva <span
+              class="text-blue-500 font-bold">Parcela</span></h2>
+          <button (click)="verFormZona.set(false)" class="text-slate-400 hover:text-white text-xs">? Cancelar</button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="space-y-4">
+            <p class="text-[10px] text-blue-400 font-bold uppercase tracking-widest">Info General</p>
+            <select [(ngModel)]="nuevaZona.varCultivo"
+              class="w-full bg-slate-900 border border-white/10 p-4 text-white outline-none focus:border-blue-500">
+              <option value="" disabled selected>Variedad de Cultivo</option>
+              <option value="TOMATE">Tomate</option>
+              <option value="LECHUGA">Lechuga</option>
+              <option value="PIMIENTO">Pimiento</option>
+            </select>
+            <input [(ngModel)]="nuevaZona.ubicacion" placeholder="Ubicación Física"
+              class="w-full bg-slate-900 border border-white/10 p-4 text-white outline-none focus:border-blue-500">
+            <div class="flex flex-col gap-1 relative">
+              <label class="text-[9px] text-blue-400 font-bold uppercase tracking-widest">Buscar Operario
+                Responsable</label>
+              <div class="relative">
+                <input type="text" autocomplete="off" [ngModel]="busquedaOperario()"
+                  (ngModelChange)="busquedaOperario.set($event)" placeholder="Escribe el nombre..."
+                  class="w-full bg-slate-900 border border-white/20 p-4 text-white outline-none focus:border-blue-500 pr-10">
+                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">??</span>
               </div>
-            }
+              @if (busquedaOperario().length > 0 && operariosFiltrados().length > 0) {
+              <div
+                class="absolute z-50 top-[75px] left-0 w-full bg-slate-800 border border-blue-500 shadow-2xl max-h-48 overflow-y-auto">
+                @for (u of operariosFiltrados(); track u.id) {
+                <div (click)="seleccionarOperario(u)"
+                  class="p-3 hover:bg-blue-600 cursor-pointer border-b border-white/5 transition-colors text-white">
+                  <p class="text-sm font-bold">{{ u.nombre }}</p>
+                  <p class="text-[10px] text-slate-400">{{ u.email }}</p>
+                </div>
+                }
+              </div>
+              }
+            </div>
+          </div>
+          <div class="space-y-4 bg-white/5 p-4 rounded-sm border border-white/5">
+            <p class="text-[10px] text-emerald-400 font-bold uppercase tracking-widest">Umbrales de Alerta</p>
+            <div>
+              <label class="text-[9px] text-slate-400 block mb-1">Humedad Suelo Mínima (%)</label>
+              <input type="number" [(ngModel)]="nuevaZona.humSueloMinConfig"
+                class="w-full bg-black/20 border border-white/10 p-3 text-white focus:border-emerald-500">
+            </div>
+            <div>
+              <label class="text-[9px] text-slate-400 block mb-1">Humedad Suelo Máxima (%)</label>
+              <input type="number" [(ngModel)]="nuevaZona.humSueloMaxConfig"
+                class="w-full bg-black/20 border border-white/10 p-3 text-white focus:border-emerald-500">
+            </div>
+            <div>
+              <label class="text-[9px] text-slate-400 block mb-1">Temperatura Crítica (ºC)</label>
+              <input type="number" [(ngModel)]="nuevaZona.tempMaxConfig"
+                class="w-full bg-black/20 border border-white/10 p-3 text-white focus:border-orange-500">
+            </div>
+          </div>
+          <div class="md:col-span-2 flex gap-4 mt-2">
+            <button (click)="guardarZona()"
+              class="flex-1 bg-blue-600 text-white font-bold uppercase py-4 hover:bg-blue-700 transition-all">Activar
+              Parcela</button>
           </div>
         </div>
+      </section>
       }
 
-      <div class="flex flex-wrap gap-4 mb-10">
-        <button (click)="crearNuevoUsuario()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] uppercase font-bold px-8 py-4 transition-all">+ Registrar Operario</button>
-        <button (click)="crearNuevaZona()" class="bg-slate-800 hover:bg-slate-700 text-white text-[10px] uppercase font-bold px-8 py-4 border border-white/10 transition-all">+ Configurar Parcela</button>
+      <!-- Formulario editar zona -->
+      @if (verFormEditarZona() && zonaEditando) {
+      <section class="animate-fade-in bg-black/60 border border-emerald-500/30 p-8 mb-8 backdrop-blur-xl rounded-sm">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-xl font-light tracking-widest text-white uppercase">Editar <span
+              class="text-emerald-500 font-bold">Parcela</span></h2>
+          <button (click)="verFormEditarZona.set(false)" class="text-slate-400 hover:text-white text-xs">?
+            Cancelar</button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="space-y-4">
+            <select [(ngModel)]="zonaEditando.varCultivo"
+              class="w-full bg-slate-900 border border-white/10 p-4 text-white outline-none focus:border-emerald-500">
+              <option value="TOMATE">Tomate</option>
+              <option value="LECHUGA">Lechuga</option>
+              <option value="PIMIENTO">Pimiento</option>
+            </select>
+            <input [(ngModel)]="zonaEditando.ubicacion" placeholder="Ubicación Física"
+              class="w-full bg-slate-900 border border-white/10 p-4 text-white outline-none focus:border-emerald-500">
+            <div class="flex flex-col gap-1 relative">
+              <label class="text-[9px] text-emerald-400 font-bold uppercase tracking-widest">Operario
+                Responsable</label>
+              <div class="relative">
+                <input type="text" autocomplete="off" [ngModel]="busquedaOperario()"
+                  (ngModelChange)="busquedaOperario.set($event)" placeholder="Buscar operario..."
+                  class="w-full bg-slate-900 border border-white/20 p-4 text-white outline-none focus:border-emerald-500 pr-10">
+                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">??</span>
+              </div>
+              @if (busquedaOperario().length > 0 && operariosFiltrados().length > 0) {
+              <div
+                class="absolute z-50 top-[75px] left-0 w-full bg-slate-800 border border-emerald-500 shadow-2xl max-h-48 overflow-y-auto">
+                @for (u of operariosFiltrados(); track u.id) {
+                <div (click)="seleccionarOperario(u)"
+                  class="p-3 hover:bg-emerald-700 cursor-pointer border-b border-white/5 transition-colors text-white">
+                  <p class="text-sm font-bold">{{ u.nombre }}</p>
+                  <p class="text-[10px] text-slate-400">{{ u.email }}</p>
+                </div>
+                }
+              </div>
+              }
+            </div>
+          </div>
+          <div class="space-y-4 bg-white/5 p-4 rounded-sm border border-white/5">
+            <p class="text-[10px] text-emerald-400 font-bold uppercase tracking-widest">Umbrales de Alerta</p>
+            <div>
+              <label class="text-[9px] text-slate-400 block mb-1">Humedad Suelo Mínima (%)</label>
+              <input type="number" [(ngModel)]="zonaEditando.humSueloMinConfig"
+                class="w-full bg-black/20 border border-white/10 p-3 text-white focus:border-emerald-500">
+            </div>
+            <div>
+              <label class="text-[9px] text-slate-400 block mb-1">Humedad Suelo Máxima (%)</label>
+              <input type="number" [(ngModel)]="zonaEditando.humSueloMaxConfig"
+                class="w-full bg-black/20 border border-white/10 p-3 text-white focus:border-emerald-500">
+            </div>
+            <div>
+              <label class="text-[9px] text-slate-400 block mb-1">Temperatura Crítica (ºC)</label>
+              <input type="number" [(ngModel)]="zonaEditando.tempMaxConfig"
+                class="w-full bg-black/20 border border-white/10 p-3 text-white focus:border-orange-500">
+            </div>
+          </div>
+          <div class="md:col-span-2 flex gap-4 mt-2">
+            <button (click)="guardarEdicionZona()"
+              class="flex-1 bg-emerald-600 text-white font-bold uppercase py-4 hover:bg-emerald-700 transition-all">Guardar
+              Cambios</button>
+          </div>
+        </div>
+      </section>
+      }
+
+      <!-- Tabla de zonas -->
+      @if (!verFormZona() && !verFormEditarZona()) {
+      <section class="bg-black/40 border border-white/10 rounded-sm overflow-hidden backdrop-blur-xl">
+        <table class="w-full text-left text-white">
+          <thead>
+            <tr class="text-[10px] text-slate-400 uppercase tracking-widest bg-white/5">
+              <th class="px-6 py-4">Cultivo</th>
+              <th class="px-6 py-4">Ubicación</th>
+              <th class="px-6 py-4">Responsable</th>
+              <th class="px-6 py-4 text-center">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-white/5">
+            @for (zona of zonas(); track zona.id) {
+            <tr class="hover:bg-white/5 transition-colors">
+              <td class="px-6 py-4 font-bold">{{ zona.varCultivo }}</td>
+              <td class="px-6 py-4 text-slate-400 text-xs">{{ zona.ubicacion }}</td>
+              <td class="px-6 py-4 text-slate-500 text-[10px] font-bold uppercase">{{ zona.nombreUsuario ?? 'SIN
+                ASIGNAR' }}</td>
+              <td class="px-6 py-4 text-center flex gap-2 justify-center">
+                <button (click)="editarZona(zona)"
+                  class="text-emerald-400 hover:bg-emerald-500 hover:text-white px-3 py-1 rounded border border-emerald-500/30 text-[10px] font-bold uppercase transition-all">
+                  Editar
+                </button>
+                <button (click)="eliminarZona(zona.id)"
+                  class="text-red-500 hover:bg-red-500 hover:text-white px-3 py-1 rounded border border-red-500/30 text-[10px] font-bold uppercase transition-all">
+                  Eliminar
+                </button>
+              </td>
+            </tr>
+            }
+            @empty {
+            <tr>
+              <td colspan="4" class="px-6 py-10 text-center text-slate-600 text-sm">No hay parcelas registradas aún.
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </section>
+      }
+    </div>
+    }
+
+    <!-- TAB: OPERARIOS -->
+    @if (pestanaAdmin() === 'usuarios') {
+    <div class="animate-fade-in">
+      @if (!verFormUsuario()) {
+      <div class="flex gap-3 mb-6">
+        <button (click)="crearNuevoUsuario()"
+          class="bg-blue-600 hover:bg-blue-500 text-white text-[10px] uppercase font-bold px-8 py-3 transition-all">
+          + Registrar Operario
+        </button>
       </div>
+      }
 
       @if (verFormUsuario()) {
-        <section class="animate-fade-in bg-black/60 border border-emerald-500/30 p-8 mb-12 backdrop-blur-xl rounded-sm">
-          <h2 class="text-xl font-light tracking-widest text-white uppercase mb-6">Registrar <span class="text-emerald-500 font-bold">Nuevo Operario</span></h2>
-          
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Nombre y Email -->
-            <input [(ngModel)]="nuevoUsuario.nombre" placeholder="Nombre Completo" class="bg-white/5 border border-white/10 p-4 text-white outline-none focus:border-emerald-500">
-            <input [(ngModel)]="nuevoUsuario.email" placeholder="Email" class="bg-white/5 border border-white/10 p-4 text-white outline-none focus:border-emerald-500">
-            
-            <!-- Primera Contraseña -->
-            <input [(ngModel)]="nuevoUsuario.password" type="password" placeholder="Contraseña" 
-                   class="bg-white/5 border border-white/10 p-4 text-white outline-none focus:border-emerald-500">
-            
-            <!-- SEGUNDA CONTRASEÑA (Confirmación) -->
-            <div class="flex flex-col gap-1">
-              <input [ngModel]="confirmarPassword()" (ngModelChange)="confirmarPassword.set($event)" 
-                     type="password" placeholder="Confirmar Contraseña" 
-                     class="bg-white/5 border p-4 text-white outline-none transition-all"
-                     [ngClass]="confirmarPassword() !== '' && nuevoUsuario.password !== confirmarPassword() ? 'border-red-500' : 'border-white/10'">
-              
-              <!-- Mensaje de error dinámico -->
-              @if (confirmarPassword() !== '' && nuevoUsuario.password !== confirmarPassword()) {
-                <span class="text-[10px] text-red-500 font-bold italic ml-1">⚠️ Las contraseñas no coinciden</span>
-              }
-            </div>
-
-            <!-- Botones de acción -->
-            <div class="md:col-span-2 flex gap-4 mt-2">
-              <button (click)="guardarUsuario()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold uppercase py-4 transition-all">
-                Finalizar Registro
-              </button>
-              <button (click)="verFormUsuario.set(false)" class="px-8 border border-white/10 text-white uppercase text-[10px] hover:bg-white/5">
-                Cancelar
-              </button>
-            </div>
-          </div>
-        </section>
-      }
-      @if (verFormZona()) {
-        <section class="animate-fade-in bg-black/60 border border-blue-500/30 p-8 rounded-sm mb-12 backdrop-blur-xl">
-          <h2 class="text-xl font-light tracking-widest text-white uppercase mb-6">
-            Configuración <span class="text-blue-500 font-bold">Integral de Parcela</span>
-          </h2>
-          
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="space-y-4">
-              <p class="text-[10px] text-blue-400 font-bold uppercase tracking-widest ml-1">Información General</p>
-              
-              <select [(ngModel)]="nuevaZona.varCultivo" class="w-full bg-slate-900 border border-white/10 p-4 text-white outline-none focus:border-blue-500">
-                <option value="" disabled selected>Variedad de Cultivo</option>
-                <option value="TOMATE">Tomate</option>
-                <option value="LECHUGA">Lechuga</option>
-                <option value="PIMIENTO">Pimiento</option>
-              </select>
-
-              <input [(ngModel)]="nuevaZona.ubicacion" placeholder="Ubicación Física" 
-                     class="w-full bg-slate-900 border border-white/10 p-4 text-white focus:border-blue-500">
-
-              <div class="flex flex-col gap-1 relative">
-                <label class="text-[9px] text-blue-400 font-bold uppercase tracking-widest ml-1">Buscar Operario Responsable</label>
-                <div class="relative">
-                  <input type="text" autocomplete="off" [ngModel]="busquedaOperario()" (ngModelChange)="busquedaOperario.set($event)"
-                         placeholder="Escribe el nombre del operario..."
-                         class="w-full bg-slate-900 border border-white/20 p-4 text-white font-medium outline-none focus:border-blue-500 pr-10">
-                  <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">🔍</span>
-                </div>
-                @if (busquedaOperario().length > 0 && operariosFiltrados().length > 0) {
-                  <div class="absolute z-50 top-[75px] left-0 w-full bg-slate-800 border border-blue-500 shadow-2xl max-h-48 overflow-y-auto">
-                    @for (u of operariosFiltrados(); track u.id) {
-                      <div (click)="seleccionarOperario(u)" class="p-3 hover:bg-blue-600 cursor-pointer border-b border-white/5 transition-colors group text-white">
-                        <p class="text-sm font-bold">{{ u.nombre }}</p>
-                        <p class="text-[10px] text-slate-400 group-hover:text-blue-100">{{ u.email }}</p>
-                      </div>
-                    }
-                  </div>
-                }
-              </div>
-            </div>
-
-            <div class="space-y-4 bg-white/5 p-4 rounded-sm border border-white/5">
-              <p class="text-[10px] text-emerald-400 font-bold uppercase tracking-widest">Umbrales de Alerta (Programación)</p>
-              <div>
-                <label class="text-[9px] text-slate-400 block mb-1">Humedad Suelo Mínima (%)</label>
-                <input type="number" [(ngModel)]="nuevaZona.humSueloMinConfig" class="w-full bg-black/20 border border-white/10 p-3 text-white focus:border-emerald-500">
-              </div>
-              <div>
-                <label class="text-[9px] text-slate-400 block mb-1">Humedad Suelo Máxima (%)</label>
-                <input type="number" [(ngModel)]="nuevaZona.humSueloMaxConfig" class="w-full bg-black/20 border border-white/10 p-3 text-white focus:border-emerald-500">
-              </div>
-              <div>
-                <label class="text-[9px] text-slate-400 block mb-1">Temperatura Crítica (ºC)</label>
-                <input type="number" [(ngModel)]="nuevaZona.tempMaxConfig" class="w-full bg-black/20 border border-white/10 p-3 text-white focus:border-orange-500">
-              </div>
-            </div>
-
-            <div class="md:col-span-2 flex gap-4 mt-4">
-              <button (click)="guardarZona()" class="flex-1 bg-blue-600 text-white font-bold uppercase py-4 hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20">Finalizar y Activar Parcela</button>
-              <button (click)="verFormZona.set(false)" class="px-8 border border-white/10 text-white uppercase text-[10px] hover:bg-white/5">Cancelar</button>
-            </div>
-          </div> 
-        </section> 
-      }
-
-      @if (!verFormUsuario() && !verFormZona()) {
-        <section class="bg-black/40 border border-white/10 rounded-sm overflow-hidden backdrop-blur-xl">
-          <table class="w-full text-left text-white">
-            <thead>
-              <tr class="text-[10px] text-slate-400 uppercase tracking-widest bg-white/5">
-                <th class="px-8 py-4">Cultivo</th>
-                <th class="px-8 py-4">Ubicación</th>
-                <th class="px-8 py-4 text-right">Responsable</th>
-                <th class="px-8 py-4 text-center">Acciones</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-white/5">
-              @for (zona of zonas(); track zona.id) {
-                <tr class="hover:bg-white/5">
-                  <td class="px-8 py-5 font-bold">{{ zona.varCultivo }}</td>
-                  <td class="px-8 py-5 text-slate-400 text-xs">{{ zona.ubicacion }}</td>
-                  <td class="px-8 py-5 text-right text-slate-500 text-[10px] font-bold uppercase">{{ zona.nombreUsuario ?? 'SISTEMA' }}</td>
-                  <td class="px-8 py-5 text-center">
-                    <button (click)="eliminarZona(zona.id)" class="text-red-500 hover:text-white">Eliminar</button>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </section>
-      }
-    }
-
-    @else if (authService.userRole() === 'USUARIO') {
-      @if (alertasPendientes().length > 0) {
-        <div class="mb-12 animate-fade-in">
-          <h2 class="text-xs font-bold text-red-500 uppercase tracking-[0.4em] mb-4 italic animate-pulse">⚠️ Notificaciones Críticas</h2>
-          <div class="space-y-3">
-            @for (alerta of alertasPendientes(); track alerta.id) {
-              <div class="p-4 flex justify-between items-center backdrop-blur-xl border transition-all"
-                   [ngClass]="alerta.estado === 'PENDIENTE' ? 'bg-red-950/20 border-red-500/50' : 'bg-emerald-950/10 border-emerald-500/20 opacity-60'">
-                <div>
-                  <div class="flex items-center gap-2 mb-1">
-                    <p class="text-[10px] font-bold uppercase" [ngClass]="alerta.estado === 'PENDIENTE' ? 'text-red-400' : 'text-emerald-400'">{{ alerta.tipo }}</p>
-                    <span class="text-[8px] px-2 py-0.5 rounded-full text-black font-bold" [ngClass]="alerta.estado === 'PENDIENTE' ? 'bg-red-500' : 'bg-emerald-500'">{{ alerta.estado }}</span>
-                  </div>
-                  <p class="text-sm text-slate-300">{{ alerta.descripcion }} en <b>{{ alerta.nombreZona }}</b></p>
-                </div>
-                @if (alerta.estado === 'PENDIENTE') {
-                  <button (click)="resolverAlerta(alerta.id)" class="text-[9px] border border-red-500/40 text-red-500 hover:bg-red-600 px-4 py-2 uppercase font-bold transition-all">Resolver</button>
-                } @else { <span class="text-emerald-500">✓</span> }
-              </div>
+      <section class="animate-fade-in bg-black/60 border border-blue-500/30 p-8 mb-8 backdrop-blur-xl rounded-sm">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-xl font-light tracking-widest text-white uppercase">Registrar <span
+              class="text-blue-400 font-bold">Operario</span></h2>
+          <button (click)="verFormUsuario.set(false)" class="text-slate-400 hover:text-white text-xs">?
+            Cancelar</button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <input [(ngModel)]="nuevoUsuario.nombre" placeholder="Nombre Completo"
+            class="bg-white/5 border border-white/10 p-4 text-white outline-none focus:border-blue-500">
+          <input [(ngModel)]="nuevoUsuario.email" placeholder="Email"
+            class="bg-white/5 border border-white/10 p-4 text-white outline-none focus:border-blue-500">
+          <input [(ngModel)]="nuevoUsuario.password" type="password" placeholder="Contraseña"
+            class="bg-white/5 border border-white/10 p-4 text-white outline-none focus:border-blue-500">
+          <div class="flex flex-col gap-1">
+            <input [ngModel]="confirmarPassword()" (ngModelChange)="confirmarPassword.set($event)" type="password"
+              placeholder="Confirmar Contraseña" class="bg-white/5 border p-4 text-white outline-none transition-all"
+              [ngClass]="confirmarPassword() !== '' && nuevoUsuario.password !== confirmarPassword() ? 'border-red-500' : 'border-white/10 focus:border-blue-500'">
+            @if (confirmarPassword() !== '' && nuevoUsuario.password !== confirmarPassword()) {
+            <span class="text-[10px] text-red-500 font-bold italic ml-1"> Las contraseñas no coinciden</span>
             }
           </div>
+          <div class="md:col-span-2 flex gap-4 mt-2">
+            <button (click)="guardarUsuario()"
+              class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-bold uppercase py-4 transition-all">Finalizar
+              Registro</button>
+          </div>
         </div>
+      </section>
       }
 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        @for (zona of zonas(); track zona.id) {
-          <div class="bg-black/40 border-l-4 border-l-emerald-500 p-8 shadow-2xl transition hover:bg-black/60">
-            <div class="flex justify-between items-start mb-6 text-white">
-              <div>
-                <h3 class="text-emerald-400 font-bold text-xl">{{ zona.varCultivo }}</h3>
-                <p class="text-[10px] text-slate-500 uppercase tracking-widest">{{ zona.ubicacion }}</p>
-              </div>
-              <span class="text-5xl font-mono font-bold">{{ zona.ultimaHumedadSuelo ?? '--' }}%</span>
-            </div>
-            <div class="h-1 w-full bg-slate-800 rounded-full overflow-hidden mb-6">
-              <div class="bg-emerald-500 h-full transition-all" [style.width.%]="zona.ultimaHumedadSuelo || 0"></div>
-            </div>
-            <div class="grid grid-cols-2 gap-3 mb-6">
-              <button (click)="encenderRiego(zona.id)" class="py-2 bg-blue-600/20 hover:bg-blue-600 text-blue-400 hover:text-white border border-blue-500/30 text-[9px] font-bold uppercase tracking-widest rounded-sm">Iniciar Riego</button>
-              <button (click)="apagarRiego(zona.id)" class="py-2 bg-slate-800 hover:bg-red-600/40 text-slate-400 hover:text-red-400 border border-white/5 text-[9px] font-bold uppercase tracking-widest rounded-sm">Detener</button>
-            </div>
-            <div class="flex justify-between text-[9px] text-slate-600 font-bold uppercase italic">
-              <span>Humedad Óptima</span>
-              <span>Refresco: {{ zona.fechaUltimaLectura | date:'HH:mm' }}</span>
-            </div>
+      @if (verFormEditarUsuario() && usuarioEditando) {
+      <section class="animate-fade-in bg-black/60 border border-emerald-500/30 p-8 mb-6 backdrop-blur-xl rounded-sm">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-xl font-light tracking-widest text-white uppercase">Editar <span
+              class="text-emerald-400 font-bold">Operario</span></h2>
+          <button (click)="verFormEditarUsuario.set(false)" class="text-slate-400 hover:text-white text-xs">✕
+            Cancelar</button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <input [(ngModel)]="usuarioEditando.nombre" placeholder="Nombre Completo"
+            class="bg-white/5 border border-white/10 p-4 text-white outline-none focus:border-emerald-500">
+          <input [(ngModel)]="usuarioEditando.email" placeholder="Email"
+            class="bg-white/5 border border-white/10 p-4 text-white outline-none focus:border-emerald-500">
+          <div class="md:col-span-2">
+            <input [(ngModel)]="usuarioEditando.password" type="password"
+              placeholder="Nueva contraseña (dejar en blanco para no cambiar)"
+              class="w-full bg-white/5 border border-white/10 p-4 text-white outline-none focus:border-emerald-500">
+            <p class="text-[10px] text-slate-500 mt-1 ml-1">Si no quieres cambiar la contraseña, deja el campo en
+              blanco.</p>
           </div>
+          <div class="md:col-span-2 flex gap-4 mt-2">
+            <button (click)="guardarEdicionUsuario()"
+              class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold uppercase py-4 transition-all">Guardar
+              Cambios</button>
+          </div>
+        </div>
+      </section>
+      }
+
+      <div class="bg-black/40 border border-white/10 rounded-sm overflow-hidden backdrop-blur-xl">
+        <table class="w-full text-left text-white">
+          <thead>
+            <tr class="text-[10px] text-slate-400 uppercase tracking-widest bg-white/5">
+              <th class="px-6 py-4">Operario</th>
+              <th class="px-6 py-4 text-center">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-white/5">
+            @for (u of usuarios(); track u.id) {
+            @if (u.rol !== 'ADMIN') {
+            <tr class="hover:bg-blue-500/5 transition-colors">
+              <td class="px-6 py-4">
+                <p class="text-sm font-bold">{{ u.nombre }}</p>
+                <p class="text-[10px] text-slate-500">{{ u.email }}</p>
+              </td>
+              <td class="px-6 py-4 text-center flex gap-2 justify-center">
+                <button (click)="editarUsuario(u)"
+                  class="text-emerald-400 hover:bg-emerald-500 hover:text-white px-3 py-1 rounded border border-emerald-500/30 text-[10px] font-bold uppercase transition-all">
+                  Editar
+                </button>
+                <button (click)="eliminarUsuario(u.id, u.nombre)"
+                  class="text-red-500 hover:bg-red-500 hover:text-white px-3 py-1 rounded border border-red-500/30 text-[10px] font-bold uppercase transition-all">
+                  Eliminar
+                </button>
+              </td>
+            </tr>
+            }
+            }
+            @empty {
+            <tr>
+              <td colspan="2" class="px-6 py-10 text-center text-slate-600 text-sm">No hay operarios registrados.</td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+    }
+
+    <!-- TAB: ALERTAS -->
+    @if (pestanaAdmin() === 'alertas') {
+    <div class="animate-fade-in">
+      @if (alertasPendientes().length === 0) {
+      <div class="bg-emerald-950/20 border border-emerald-500/20 rounded-sm p-12 text-center">
+        <p class="text-emerald-400 text-2xl mb-2">?</p>
+        <p class="text-emerald-400 font-bold uppercase tracking-widest text-sm">Sistema operando con normalidad</p>
+        <p class="text-slate-500 text-xs mt-1">No hay alertas activas en el sistema.</p>
+      </div>
+      }
+      <div class="grid grid-cols-1 gap-3">
+        @for (alerta of alertasPendientes(); track alerta.id) {
+        <div class="p-4 flex justify-between items-center backdrop-blur-xl border transition-all"
+          [ngClass]="alerta.estado === 'PENDIENTE' ? 'bg-red-950/20 border-red-500/30' : 'bg-emerald-950/10 border-emerald-500/10 opacity-60'">
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <p class="text-[10px] font-bold uppercase"
+                [ngClass]="alerta.estado === 'PENDIENTE' ? 'text-red-400' : 'text-emerald-400'">{{ alerta.tipo }}</p>
+              <span class="text-[8px] px-2 py-0.5 rounded-full text-black font-bold uppercase"
+                [ngClass]="alerta.estado === 'PENDIENTE' ? 'bg-red-500' : 'bg-emerald-500'">{{ alerta.estado }}</span>
+            </div>
+            <p class="text-sm text-slate-300">{{ alerta.descripcion }} en <b>{{ alerta.nombreZona }}</b></p>
+            <p class="text-[10px] mt-1 text-slate-500 font-bold uppercase">Responsable: <span class="text-slate-300">{{
+                alerta.nombreUsuario ?? 'Sistema' }}</span></p>
+          </div>
+          @if (alerta.estado === 'PENDIENTE') {
+          <button (click)="resolverAlerta(alerta.id)"
+            class="text-[9px] border border-red-500/40 text-red-500 hover:bg-red-600 hover:text-white px-6 py-2 uppercase font-bold transition-all">
+            Resolver
+          </button>
+          } @else {
+          <span class="text-emerald-500 text-xl p-2">?</span>
+          }
+        </div>
         }
       </div>
+    </div>
     }
+    }
+
+    <!-- ------------------- PANEL USUARIO ------------------- -->
+    @else if (authService.userRole() === 'USUARIO') {
+
+    <!-- Vista: Historial de datos de zona -->
+    @if (vistaUsuario() === 'historial' && zonaSeleccionada()) {
+    <div class="animate-fade-in">
+      <div class="flex items-center gap-4 mb-8">
+        <button (click)="volverAlDashboard()"
+          class="text-[10px] bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white px-4 py-2 border border-white/10 uppercase font-bold tracking-widest transition-all">
+          Volver
+        </button>
+        <div>
+          <h2 class="text-2xl font-light text-white">Historial <span class="font-bold text-emerald-500">{{
+              zonaSeleccionada().varCultivo }}</span></h2>
+          <p class="text-[10px] text-slate-500 uppercase tracking-widest">{{ zonaSeleccionada().ubicacion }}</p>
+        </div>
+      </div>
+
+      @if (cargandoHistorial()) {
+      <div class="flex items-center justify-center py-20">
+        <div class="text-emerald-500 text-sm font-bold uppercase tracking-widest animate-pulse">Cargando registros...
+        </div>
+      </div>
+      } @else if (historialDatos().length === 0) {
+      <div class="bg-slate-900/40 border border-white/10 rounded-sm p-12 text-center">
+        <p class="text-slate-500 text-sm">No hay registros históricos para esta zona.</p>
+      </div>
+      } @else {
+      <div class="bg-black/40 border border-white/10 rounded-sm overflow-hidden backdrop-blur-xl">
+        <table class="w-full text-left text-white text-sm">
+          <thead>
+            <tr class="text-[10px] text-slate-400 uppercase tracking-widest bg-white/5">
+              <th class="px-6 py-4">Fecha / Hora</th>
+              <th class="px-6 py-4 text-center">Temp. (C)</th>
+              <th class="px-6 py-4 text-center">Hum. Suelo</th>
+              <th class="px-6 py-4 text-center">Hum. Aire</th>
+              <th class="px-6 py-4 text-center">Lluvia</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-white/5">
+            @for (reg of historialDatos(); track reg.id) {
+            <tr class="hover:bg-white/5 transition-colors">
+              <td class="px-6 py-3 text-slate-400 text-xs font-mono">{{ parseDate(reg.fecha) | date:'dd/MM/yyyy HH:mm'
+                }}</td>
+              <td class="px-6 py-3 text-center">
+                <span class="font-mono font-bold"
+                  [ngClass]="reg.temperatura > 35 ? 'text-red-400' : reg.temperatura < 10 ? 'text-blue-400' : 'text-emerald-400'">
+                  {{ reg.temperatura }}°C
+                </span>
+              </td>
+              <td class="px-6 py-3 text-center">
+                <span class="font-mono font-bold"
+                  [ngClass]="reg.humedadSuelo < 30 ? 'text-red-400' : reg.humedadSuelo > 80 ? 'text-blue-400' : 'text-emerald-400'">
+                  {{ reg.humedadSuelo }}%
+                </span>
+              </td>
+              <td class="px-6 py-3 text-center font-mono text-slate-300">{{ reg.humedadAire }}%</td>
+              <td class="px-6 py-3 text-center">
+                <span [ngClass]="reg.lluvia ? 'text-blue-400' : 'text-slate-600'" class="text-xs font-bold uppercase">
+                  {{ reg.lluvia ? 'Si' : 'No' }}
+                </span>
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      }
+    </div>
+    }
+
+    <!-- Vista: Dashboard principal usuario -->
+    @if (vistaUsuario() === 'dashboard') {
+    <!-- Alertas pendientes -->
+    @if (alertasPendientes().length > 0) {
+    <div class="mb-10 animate-fade-in">
+      <h2 class="text-xs font-bold text-red-500 uppercase tracking-[0.4em] mb-4 italic animate-pulse"> Notificaciones
+        Críticas</h2>
+      <div class="space-y-3">
+        @for (alerta of alertasPendientes(); track alerta.id) {
+        <div class="p-4 flex justify-between items-center backdrop-blur-xl border transition-all"
+          [ngClass]="alerta.estado === 'PENDIENTE' ? 'bg-red-950/20 border-red-500/50' : 'bg-emerald-950/10 border-emerald-500/20 opacity-60'">
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <p class="text-[10px] font-bold uppercase"
+                [ngClass]="alerta.estado === 'PENDIENTE' ? 'text-red-400' : 'text-emerald-400'">{{ alerta.tipo }}</p>
+              <span class="text-[8px] px-2 py-0.5 rounded-full text-black font-bold"
+                [ngClass]="alerta.estado === 'PENDIENTE' ? 'bg-red-500' : 'bg-emerald-500'">{{ alerta.estado }}</span>
+            </div>
+            <p class="text-sm text-slate-300">{{ alerta.descripcion }} en <b>{{ alerta.nombreZona }}</b></p>
+          </div>
+          @if (alerta.estado === 'PENDIENTE') {
+          <button (click)="resolverAlerta(alerta.id)"
+            class="text-[9px] border border-red-500/40 text-red-500 hover:bg-red-600 hover:text-white px-4 py-2 uppercase font-bold transition-all">
+            Resolver
+          </button>
+          } @else {
+          <span class="text-emerald-500 text-xl">?</span>
+          }
+        </div>
+        }
+      </div>
+    </div>
+    }
+
+    <!-- Tarjetas de zonas -->
+    @if (zonas().length === 0) {
+    <div class="bg-slate-900/40 border border-white/10 rounded-sm p-12 text-center">
+      <p class="text-slate-400 text-sm">No tienes parcelas asignadas aún.</p>
+      <p class="text-slate-600 text-xs mt-1">Contacta con el administrador del sistema.</p>
+    </div>
+    }
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      @for (zona of zonas(); track zona.id) {
+      <div
+        class="bg-black/40 border-l-4 border-l-emerald-500 p-8 shadow-2xl transition hover:bg-black/60 flex flex-col">
+        <!-- Cabecera -->
+        <div class="flex justify-between items-start mb-4 text-white">
+          <div>
+            <h3 class="text-emerald-400 font-bold text-xl">{{ zona.varCultivo }}</h3>
+            <p class="text-[10px] text-slate-500 uppercase tracking-widest">{{ zona.ubicacion }}</p>
+          </div>
+          @if (tieneRiegoActivo(zona.id)) {
+          <span
+            class="text-[8px] bg-blue-500/20 text-blue-400 px-2 py-1 border border-blue-500/30 font-bold uppercase animate-pulse">
+            RIEGO ON</span>
+          }
+        </div>
+        <!-- Humedad con barra -->
+        <div class="mb-4">
+          <div class="flex justify-between items-baseline mb-1">
+            <span class="text-[10px] text-slate-500 uppercase">Humedad Suelo</span>
+            <span class="text-2xl font-mono font-bold" [ngClass]="getHumedadClass(zona.ultimaHumedadSuelo)">
+              {{ zona.ultimaHumedadSuelo ?? '--' }}%
+            </span>
+          </div>
+          <div class="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+            <div class="h-full transition-all rounded-full"
+              [ngClass]="getHumedadClass(zona.ultimaHumedadSuelo) === 'text-red-400' ? 'bg-red-500' : getHumedadClass(zona.ultimaHumedadSuelo) === 'text-blue-400' ? 'bg-blue-500' : 'bg-emerald-500'"
+              [style.width.%]="getBarWidth(zona.ultimaHumedadSuelo)">
+            </div>
+          </div>
+        </div>
+        <!-- Temperatura y humedad aire -->
+        <div class="grid grid-cols-2 gap-3 mb-6 text-center">
+          <div class="bg-white/5 rounded p-2">
+            <p class="text-[9px] text-slate-500 uppercase">Temperatura</p>
+            <p class="text-white font-mono font-bold">{{ zona.ultimaTemperatura ?? '--' }}°C</p>
+          </div>
+          <div class="bg-white/5 rounded p-2">
+            <p class="text-[9px] text-slate-500 uppercase">Hum. Aire</p>
+            <p class="text-white font-mono font-bold">{{ zona.ultimaHumedadAire ?? '--' }}%</p>
+          </div>
+        </div>
+        <!-- Controles de riego -->
+        <div class="grid grid-cols-2 gap-3 mb-4 mt-auto">
+          <button (click)="encenderRiego(zona.id)" [disabled]="tieneRiegoActivo(zona.id)"
+            class="py-2 border text-[9px] font-bold uppercase tracking-widest rounded-sm transition-all"
+            [ngClass]="tieneRiegoActivo(zona.id) ? 'bg-blue-600/30 border-blue-500/50 text-blue-300 cursor-not-allowed' : 'bg-blue-600/20 hover:bg-blue-600 text-blue-400 hover:text-white border-blue-500/30'">
+            Iniciar Riego
+          </button>
+          <button (click)="apagarRiego(zona.id)" [disabled]="!tieneRiegoActivo(zona.id)"
+            class="py-2 border text-[9px] font-bold uppercase tracking-widest rounded-sm transition-all"
+            [ngClass]="!tieneRiegoActivo(zona.id) ? 'bg-slate-800 border-white/5 text-slate-600 cursor-not-allowed' : 'bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white border-red-500/30'">
+            ? Detener
+          </button>
+        </div>
+        <!-- Historial -->
+        <button (click)="verHistorial(zona)"
+          class="w-full py-2 border border-emerald-500/20 text-emerald-500 hover:bg-emerald-500 hover:text-white text-[9px] font-bold uppercase tracking-widest rounded-sm transition-all">
+          Ver Historial de Datos
+        </button>
+        <!-- Último registro -->
+        @if (zona.fechaUltimaLectura) {
+        <p class="text-[9px] text-slate-600 font-bold uppercase italic text-center mt-3">
+          Última lectura: {{ parseDate(zona.fechaUltimaLectura) | date:'dd/MM HH:mm' }}
+        </p>
+        }
+      </div>
+      }
+    </div>
+    }
+    }
+
   </div>
 </div>

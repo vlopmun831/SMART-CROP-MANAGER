@@ -10,15 +10,15 @@ import lombok.Setter;
 public class SensorPayloadDTO {
 
 	// El sensor solo sabe su ID de zona, no manda el objeto Zona entero
-    private Integer idZona; 
-    
-    // Las lecturas directas de los pines del Arduino
-    private Double temperatura;
-    private Double humedadSuelo;
-    private Double humedadAire;
-    private boolean lluvia;
-    
-    // Clave de seguridad para que nadie envíe datos falsos a tu API
-    private String apiKey; 
+	private Integer idZona;
+
+	// Las lecturas directas de los pines del Arduino
+	private Double temperatura;
+	private Double humedadSuelo;
+	private Double humedadAire;
+	private boolean lluvia;
+
+	// Clave de seguridad para que nadie envíe datos falsos a tu API
+	private String apiKey;
 
 }

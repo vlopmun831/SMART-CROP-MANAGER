@@ -94,13 +94,12 @@ public class RegistroService {
 		nuevoRegistro.setHumedadAire(payload.getHumedadAire());
 		nuevoRegistro.setLluvia(payload.isLluvia());
 
-		// 3. Lo vinculamos a su parcela y guardamos
 		nuevoRegistro.setZonaCultivo(zona);
 
 		return this.registroRepository.save(nuevoRegistro);
 	}
 
-// (La lógica que "decide" si hay alerta)
+	// (La lógica que "decide" si hay alerta)
 	private void comprobarYGenerarAlertas(Registro reg, ZonaCultivo zona) {
 		VariedadCultivo variedad = zona.getVarCultivo();
 

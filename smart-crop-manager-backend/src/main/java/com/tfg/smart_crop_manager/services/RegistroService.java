@@ -80,24 +80,30 @@ public class RegistroService {
 	}
 
 	// Aqui procesariamos su lectura
-	public Registro procesarLecturaSensor(SensorPayloadDTO payload) {
-		// 1. Buscamos la zona a la que pertenece el sensor
-		ZonaCultivo zona = zonaCultivoService.findById(payload.getIdZona());
+	// Aqui procesariamos su lectura (Desde la placa física)
+		public Registro procesarLecturaSensor(SensorPayloadDTO payload) {
+			// 1. Buscamos la zona a la que pertenece el sensor
+			ZonaCultivo zona = zonaCultivoService.findById(payload.getIdZona());
 
-		// 2. Creamos el registro con los datos que nos manda la placa
-		Registro nuevoRegistro = new Registro();
-		// El sensor no sabe qué hora es, así que el servidor le pone la hora exacta del
-		// sistema:
-		nuevoRegistro.setFecha(LocalDateTime.now());
-		nuevoRegistro.setTemperatura(payload.getTemperatura());
-		nuevoRegistro.setHumedadSuelo(payload.getHumedadSuelo());
-		nuevoRegistro.setHumedadAire(payload.getHumedadAire());
-		nuevoRegistro.setLluvia(payload.isLluvia());
+			// 2. Creamos el registro con los datos que nos manda la placa
+			Registro nuevoRegistro = new Registro();
+			
+			// Le ponemos la hora exacta con la zona de Madrid (igual que en el create)
+			nuevoRegistro.setFecha(LocalDateTime.now(ZoneId.of("Europe/Madrid")));
+			nuevoRegistro.setTemperatura(payload.getTemperatura());
+			nuevoRegistro.setHumedadSuelo(payload.getHumedadSuelo());
+			nuevoRegistro.setHumedadAire(payload.getHumedadAire());
+			nuevoRegistro.setLluvia(payload.isLluvia());
+			nuevoRegistro.setZonaCultivo(zona);
 
-		nuevoRegistro.setZonaCultivo(zona);
+			// Guardamos en la base de datos
+			Registro registroGuardado = this.registroRepository.save(nuevoRegistro);
+			
+			
+			this.comprobarYGenerarAlertas(registroGuardado, zona);
 
-		return this.registroRepository.save(nuevoRegistro);
-	}
+			return registroGuardado;
+		}
 
 	// (La lógica que "decide" si hay alerta)
 	private void comprobarYGenerarAlertas(Registro reg, ZonaCultivo zona) {

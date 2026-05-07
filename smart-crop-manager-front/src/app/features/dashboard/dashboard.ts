@@ -51,9 +51,20 @@ export class DashboardComponent implements OnInit {
   // ── Búsqueda de operario en el form de zona ───────────────────────────────
   busquedaOperario = signal('');
   confirmarPassword = signal('');
+  mostrarDropdownOperarios = signal(false);
 
   operariosFiltrados = computed(() => {
     const query = this.busquedaOperario().toLowerCase();
+    return this.usuarios().filter(u =>
+      u.rol !== 'ADMIN' &&
+      (u.nombre.toLowerCase().includes(query) || u.email.toLowerCase().includes(query))
+    );
+  });
+
+  // ── Búsqueda en el listado de operarios (TAB OPERARIOS) ───────────────────
+  busquedaUsuariosListado = signal('');
+  usuariosFiltradosListado = computed(() => {
+    const query = this.busquedaUsuariosListado().toLowerCase();
     return this.usuarios().filter(u =>
       u.rol !== 'ADMIN' &&
       (u.nombre.toLowerCase().includes(query) || u.email.toLowerCase().includes(query))
@@ -303,6 +314,12 @@ export class DashboardComponent implements OnInit {
       this.nuevaZona.usuario.id = usuario.id;
     }
     this.busquedaOperario.set(usuario.nombre);
+    this.mostrarDropdownOperarios.set(false);
+  }
+
+  cerrarDropdownConRetraso() {
+    // Retraso para permitir que el evento (click) se ejecute antes de ocultar el div
+    setTimeout(() => this.mostrarDropdownOperarios.set(false), 200);
   }
 
   toggleUsuarios() {

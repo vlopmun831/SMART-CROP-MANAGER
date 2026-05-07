@@ -101,7 +101,7 @@
         <div class="flex justify-between items-center mb-6">
           <h2 class="text-xl font-light tracking-widest text-white uppercase">Nueva <span
               class="text-blue-500 font-bold">Parcela</span></h2>
-          <button (click)="verFormZona.set(false)" class="text-slate-400 hover:text-white text-xs">? Cancelar</button>
+          <button (click)="verFormZona.set(false)" class="text-slate-400 hover:text-white text-xs"> Cancelar</button>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="space-y-4">
@@ -121,19 +121,30 @@
                 Responsable</label>
               <div class="relative">
                 <input type="text" autocomplete="off" [ngModel]="busquedaOperario()"
-                  (ngModelChange)="busquedaOperario.set($event)" placeholder="Escribe el nombre..."
-                  class="w-full bg-slate-900 border border-white/20 p-4 text-white outline-none focus:border-blue-500 pr-10">
-                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">??</span>
+                  (ngModelChange)="busquedaOperario.set($event)" 
+                  (focus)="mostrarDropdownOperarios.set(true)"
+                  (blur)="cerrarDropdownConRetraso()"
+                  placeholder="Escribe el nombre..."
+                  class="w-full bg-slate-900 border border-white/20 p-4 text-white outline-none focus:border-blue-500 pr-10 transition-all">
+                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                  </svg>
+                </span>
               </div>
-              @if (busquedaOperario().length > 0 && operariosFiltrados().length > 0) {
+              @if (mostrarDropdownOperarios()) {
               <div
-                class="absolute z-50 top-[75px] left-0 w-full bg-slate-800 border border-blue-500 shadow-2xl max-h-48 overflow-y-auto">
+                class="absolute z-50 top-[75px] left-0 w-full bg-slate-800 border border-blue-500 shadow-2xl max-h-48 overflow-y-auto animate-fade-in">
                 @for (u of operariosFiltrados(); track u.id) {
                 <div (click)="seleccionarOperario(u)"
-                  class="p-3 hover:bg-blue-600 cursor-pointer border-b border-white/5 transition-colors text-white">
-                  <p class="text-sm font-bold">{{ u.nombre }}</p>
-                  <p class="text-[10px] text-slate-400">{{ u.email }}</p>
+                  class="p-3 hover:bg-blue-600 cursor-pointer border-b border-white/5 transition-colors text-white group">
+                  <p class="text-sm font-bold group-hover:text-white">{{ u.nombre }}</p>
+                  <p class="text-[10px] text-slate-400 group-hover:text-blue-100">{{ u.email }}</p>
                 </div>
+                } @empty {
+                  <div class="p-4 text-center text-slate-500 text-xs italic">
+                    No se encontraron operarios
+                  </div>
                 }
               </div>
               }
@@ -172,7 +183,7 @@
         <div class="flex justify-between items-center mb-6">
           <h2 class="text-xl font-light tracking-widest text-white uppercase">Editar <span
               class="text-emerald-500 font-bold">Parcela</span></h2>
-          <button (click)="verFormEditarZona.set(false)" class="text-slate-400 hover:text-white text-xs">?
+          <button (click)="verFormEditarZona.set(false)" class="text-slate-400 hover:text-white text-xs">
             Cancelar</button>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -190,19 +201,30 @@
                 Responsable</label>
               <div class="relative">
                 <input type="text" autocomplete="off" [ngModel]="busquedaOperario()"
-                  (ngModelChange)="busquedaOperario.set($event)" placeholder="Buscar operario..."
-                  class="w-full bg-slate-900 border border-white/20 p-4 text-white outline-none focus:border-emerald-500 pr-10">
-                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">??</span>
+                  (ngModelChange)="busquedaOperario.set($event)" 
+                  (focus)="mostrarDropdownOperarios.set(true)"
+                  (blur)="cerrarDropdownConRetraso()"
+                  placeholder="Buscar operario..."
+                  class="w-full bg-slate-900 border border-white/20 p-4 text-white outline-none focus:border-emerald-500 pr-10 transition-all">
+                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                  </svg>
+                </span>
               </div>
-              @if (busquedaOperario().length > 0 && operariosFiltrados().length > 0) {
+              @if (mostrarDropdownOperarios()) {
               <div
-                class="absolute z-50 top-[75px] left-0 w-full bg-slate-800 border border-emerald-500 shadow-2xl max-h-48 overflow-y-auto">
+                class="absolute z-50 top-[75px] left-0 w-full bg-slate-800 border border-emerald-500 shadow-2xl max-h-48 overflow-y-auto animate-fade-in">
                 @for (u of operariosFiltrados(); track u.id) {
                 <div (click)="seleccionarOperario(u)"
-                  class="p-3 hover:bg-emerald-700 cursor-pointer border-b border-white/5 transition-colors text-white">
-                  <p class="text-sm font-bold">{{ u.nombre }}</p>
-                  <p class="text-[10px] text-slate-400">{{ u.email }}</p>
+                  class="p-3 hover:bg-emerald-700 cursor-pointer border-b border-white/5 transition-colors text-white group">
+                  <p class="text-sm font-bold group-hover:text-white">{{ u.nombre }}</p>
+                  <p class="text-[10px] text-slate-400 group-hover:text-emerald-100">{{ u.email }}</p>
                 </div>
+                } @empty {
+                  <div class="p-4 text-center text-slate-500 text-xs italic">
+                    No se encontraron operarios
+                  </div>
                 }
               </div>
               }
@@ -283,11 +305,22 @@
     @if (pestanaAdmin() === 'usuarios') {
     <div class="animate-fade-in">
       @if (!verFormUsuario()) {
-      <div class="flex gap-3 mb-6">
+      <div class="flex flex-col md:flex-row gap-4 mb-6">
         <button (click)="crearNuevoUsuario()"
-          class="bg-blue-600 hover:bg-blue-500 text-white text-[10px] uppercase font-bold px-8 py-3 transition-all">
+          class="bg-blue-600 hover:bg-blue-500 text-white text-[10px] uppercase font-bold px-8 py-3 transition-all whitespace-nowrap">
           + Registrar Operario
         </button>
+        <div class="relative flex-1">
+          <input type="text" [ngModel]="busquedaUsuariosListado()"
+            (ngModelChange)="busquedaUsuariosListado.set($event)" placeholder="Buscar operario por nombre o email..."
+            class="w-full bg-black/20 border border-white/10 p-3 pl-10 text-white text-xs outline-none focus:border-blue-500 transition-all">
+          <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </span>
+        </div>
       </div>
       }
 
@@ -296,7 +329,7 @@
         <div class="flex justify-between items-center mb-6">
           <h2 class="text-xl font-light tracking-widest text-white uppercase">Registrar <span
               class="text-blue-400 font-bold">Operario</span></h2>
-          <button (click)="verFormUsuario.set(false)" class="text-slate-400 hover:text-white text-xs">?
+          <button (click)="verFormUsuario.set(false)" class="text-slate-400 hover:text-white text-xs">
             Cancelar</button>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -361,8 +394,7 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-white/5">
-            @for (u of usuarios(); track u.id) {
-            @if (u.rol !== 'ADMIN') {
+            @for (u of usuariosFiltradosListado(); track u.id) {
             <tr class="hover:bg-blue-500/5 transition-colors">
               <td class="px-6 py-4">
                 <p class="text-sm font-bold">{{ u.nombre }}</p>
@@ -379,7 +411,6 @@
                 </button>
               </td>
             </tr>
-            }
             }
             @empty {
             <tr>
@@ -467,7 +498,6 @@
               <th class="px-6 py-4">Fecha / Hora</th>
               <th class="px-6 py-4 text-center">Temp. (C)</th>
               <th class="px-6 py-4 text-center">Hum. Suelo</th>
-              <th class="px-6 py-4 text-center">Hum. Aire</th>
               <th class="px-6 py-4 text-center">Lluvia</th>
             </tr>
           </thead>
@@ -488,7 +518,6 @@
                   {{ reg.humedadSuelo }}%
                 </span>
               </td>
-              <td class="px-6 py-3 text-center font-mono text-slate-300">{{ reg.humedadAire }}%</td>
               <td class="px-6 py-3 text-center">
                 <span [ngClass]="reg.lluvia ? 'text-blue-400' : 'text-slate-600'" class="text-xs font-bold uppercase">
                   {{ reg.lluvia ? 'Si' : 'No' }}
@@ -575,15 +604,11 @@
             </div>
           </div>
         </div>
-        <!-- Temperatura y humedad aire -->
-        <div class="grid grid-cols-2 gap-3 mb-6 text-center">
+        <!-- Temperatura -->
+        <div class="mb-6 text-center">
           <div class="bg-white/5 rounded p-2">
             <p class="text-[9px] text-slate-500 uppercase">Temperatura</p>
-            <p class="text-white font-mono font-bold">{{ zona.ultimaTemperatura ?? '--' }}°C</p>
-          </div>
-          <div class="bg-white/5 rounded p-2">
-            <p class="text-[9px] text-slate-500 uppercase">Hum. Aire</p>
-            <p class="text-white font-mono font-bold">{{ zona.ultimaHumedadAire ?? '--' }}%</p>
+            <p class="text-white font-mono font-bold">{{ zona.ultimaTemperatura ?? "--" }}°C</p>
           </div>
         </div>
         <!-- Controles de riego -->
@@ -596,7 +621,7 @@
           <button (click)="apagarRiego(zona.id)" [disabled]="!tieneRiegoActivo(zona.id)"
             class="py-2 border text-[9px] font-bold uppercase tracking-widest rounded-sm transition-all"
             [ngClass]="!tieneRiegoActivo(zona.id) ? 'bg-slate-800 border-white/5 text-slate-600 cursor-not-allowed' : 'bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white border-red-500/30'">
-            ? Detener
+            Detener
           </button>
         </div>
         <!-- Historial -->

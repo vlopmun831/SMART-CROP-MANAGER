@@ -11,7 +11,6 @@ import com.tfg.smart_crop_manager.dto.SensorPayloadDTO;
 import com.tfg.smart_crop_manager.persistence.entities.Registro;
 import com.tfg.smart_crop_manager.persistence.entities.ZonaCultivo;
 import com.tfg.smart_crop_manager.persistence.enums.TipoAlerta;
-import com.tfg.smart_crop_manager.persistence.enums.VariedadCultivo;
 import com.tfg.smart_crop_manager.persistence.repositories.RegistroRepository;
 import com.tfg.smart_crop_manager.services.exceptions.RegistroException;
 import com.tfg.smart_crop_manager.services.exceptions.RegistroNotFoundException;
@@ -81,39 +80,36 @@ public class RegistroService {
 
 	// Aqui procesariamos su lectura
 	// Aqui procesariamos su lectura (Desde la placa física)
-		public Registro procesarLecturaSensor(SensorPayloadDTO payload) {
-			// 1. Buscamos la zona a la que pertenece el sensor
-			ZonaCultivo zona = zonaCultivoService.findById(payload.getIdZona());
+	public Registro procesarLecturaSensor(SensorPayloadDTO payload) {
+		// 1. Buscamos la zona a la que pertenece el sensor
+		ZonaCultivo zona = zonaCultivoService.findById(payload.getIdZona());
 
-			// 2. Creamos el registro con los datos que nos manda la placa
-			Registro nuevoRegistro = new Registro();
-			
-			// Le ponemos la hora exacta con la zona de Madrid (igual que en el create)
-			nuevoRegistro.setFecha(LocalDateTime.now(ZoneId.of("Europe/Madrid")));
-			nuevoRegistro.setTemperatura(payload.getTemperatura());
-			nuevoRegistro.setHumedadSuelo(payload.getHumedadSuelo());
-			nuevoRegistro.setLluvia(payload.isLluvia());
-			nuevoRegistro.setZonaCultivo(zona);
+		// 2. Creamos el registro con los datos que nos manda la placa
+		Registro nuevoRegistro = new Registro();
 
-			// Guardamos en la base de datos
-			Registro registroGuardado = this.registroRepository.save(nuevoRegistro);
-			
-			
-			this.comprobarYGenerarAlertas(registroGuardado, zona);
+		// Le ponemos la hora exacta con la zona de Madrid (igual que en el create)
+		nuevoRegistro.setFecha(LocalDateTime.now(ZoneId.of("Europe/Madrid")));
+		nuevoRegistro.setTemperatura(payload.getTemperatura());
+		nuevoRegistro.setHumedadSuelo(payload.getHumedadSuelo());
+		nuevoRegistro.setLluvia(payload.isLluvia());
+		nuevoRegistro.setZonaCultivo(zona);
 
-			return registroGuardado;
-		}
+		// Guardamos en la base de datos
+		Registro registroGuardado = this.registroRepository.save(nuevoRegistro);
+
+		this.comprobarYGenerarAlertas(registroGuardado, zona);
+
+		return registroGuardado;
+	}
 
 	// (La lógica que "decide" si hay alerta)
 	private void comprobarYGenerarAlertas(Registro reg, ZonaCultivo zona) {
-		VariedadCultivo variedad = zona.getVarCultivo();
 
 		// --- 1. LÓGICA DE UMBRALES ---
-		
-		double minHum = (zona.getHumSueloMinConfig() != null) ? zona.getHumSueloMinConfig() : variedad.getHumSueloMin();
-		// Asumimos que tienes el getter del máximo también en tu Enum de variedades
-		double maxHum = (zona.getHumSueloMaxConfig() != null) ? zona.getHumSueloMaxConfig() : variedad.getHumSueloMax();
-		double maxTemp = (zona.getTempMaxConfig() != null) ? zona.getTempMaxConfig() : variedad.getTempMax();
+
+		double minHum = (zona.getHumSueloMinConfig() != null) ? zona.getHumSueloMinConfig() : 30.0;
+		double maxHum = (zona.getHumSueloMaxConfig() != null) ? zona.getHumSueloMaxConfig() : 80.0;
+		double maxTemp = (zona.getTempMaxConfig() != null) ? zona.getTempMaxConfig() : 35.0;
 
 		// --- 2. COMPROBACIONES DE ALERTAS Y ENCENDIDO ---
 
@@ -121,33 +117,34 @@ public class RegistroService {
 		if (reg.getHumedadSuelo() < minHum && !reg.isLluvia()) {
 			alertaService.registrarAlertaAutomatica(zona, TipoAlerta.SUELO_SECO,
 					"Humedad baja: " + reg.getHumedadSuelo() + "% (Límite: " + minHum + "%)");
-		
-            try {
-                riegoService.iniciarRiego(zona.getId(), LocalDateTime.now(ZoneId.of("Europe/Madrid")));
-                System.out.println("🌱 Riego Automático INICIADO: Humedad baja en " + zona.getUbicacion());
-            } catch (Exception e) {
-                // Silencioso: Ya estaba encendido, no hacemos nada.
-            }
+
+			try {
+				riegoService.iniciarRiego(zona.getId(), LocalDateTime.now(ZoneId.of("Europe/Madrid")));
+				System.out.println("🌱 Riego Automático INICIADO: Humedad baja en " + zona.getUbicacion());
+			} catch (Exception e) {
+				// Silencioso: Ya estaba encendido, no hacemos nada.
+			}
 		}
 
 		// --- 3. LA MAGIA NUEVA: APAGADO AUTOMÁTICO ---
-		
+
 		// ¿La tierra ya está bien mojada O ha empezado a llover? -> APAGAMOS
 		if (reg.getHumedadSuelo() >= maxHum || reg.isLluvia()) {
-            try {
-                // Llamamos al método que creamos antes para apagar el riego de esta parcela
-                riegoService.finalizarRiegoActivoPorZona(zona.getId());
-                alertaService.resolverAlertaPorZonaYTipo(zona.getId().intValue(), TipoAlerta.SUELO_SECO);
-                
-                System.out.println("🛑 Riego Automático DETENIDO: Humedad óptima o lluvia en " + zona.getUbicacion());
-            } catch (Exception e) {
-                // Silencioso: Entrará aquí la mayoría de las veces porque el riego ya estará apagado,
-                // así evitamos que salten errores en la consola.
-            }
+			try {
+				// Llamamos al método que creamos antes para apagar el riego de esta parcela
+				riegoService.finalizarRiegoActivoPorZona(zona.getId());
+				alertaService.resolverAlertaPorZonaYTipo(zona.getId().intValue(), TipoAlerta.SUELO_SECO);
+
+				System.out.println("🛑 Riego Automático DETENIDO: Humedad óptima o lluvia en " + zona.getUbicacion());
+			} catch (Exception e) {
+				// Silencioso: Entrará aquí la mayoría de las veces porque el riego ya estará
+				// apagado,
+				// así evitamos que salten errores en la consola.
+			}
 		}
 
 		// --- 4. COMPROBACIÓN DE TEMPERATURA ---
-		
+
 		// ¿Hace demasiado calor?
 		if (reg.getTemperatura() > maxTemp) {
 			alertaService.registrarAlertaAutomatica(zona, TipoAlerta.CALOR_EXTREMO,

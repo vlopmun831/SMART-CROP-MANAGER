@@ -282,14 +282,8 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="space-y-4">
             <p class="text-[10px] text-blue-400 font-bold uppercase tracking-widest">Info General</p>
-            <select [(ngModel)]="nuevaZona.varCultivo"
+            <input type="text" [(ngModel)]="nuevaZona.varCultivo" placeholder="Variedad de Cultivo (ej: Tomate Cherry)"
               class="w-full bg-slate-900 border border-white/10 p-4 text-white outline-none focus:border-blue-500">
-              <option value="" disabled selected>Variedad de Cultivo</option>
-              <option value="TOMATE">Tomates</option>
-              <option value="OLIVO">Olivos</option>
-              <option value="ALMENDRO">Almendros</option>
-              <option value="VID">Viñedos</option>
-            </select>
             <input [(ngModel)]="nuevaZona.ubicacion" placeholder="Ubicación Física"
               class="w-full bg-slate-900 border border-white/10 p-4 text-white outline-none focus:border-blue-500">
             <div class="flex flex-col gap-1 relative">
@@ -345,7 +339,7 @@
             </div>
           </div>
           <div class="md:col-span-2 flex gap-4 mt-2">
-            <button (click)="guardarZona()"
+            <button (click)="guardarNuevaZona()"
               class="flex-1 bg-blue-600 text-white font-bold uppercase py-4 hover:bg-blue-700 transition-all">Activar
               Parcela</button>
           </div>
@@ -364,12 +358,8 @@
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="space-y-4">
-            <select [(ngModel)]="zonaEditando.varCultivo"
+            <input type="text" [(ngModel)]="zonaEditando.varCultivo" placeholder="Variedad de Cultivo"
               class="w-full bg-slate-900 border border-white/10 p-4 text-white outline-none focus:border-emerald-500">
-              <option value="TOMATE">Tomate</option>
-              <option value="LECHUGA">Lechuga</option>
-              <option value="PIMIENTO">Pimiento</option>
-            </select>
             <input [(ngModel)]="zonaEditando.ubicacion" placeholder="Ubicación Física"
               class="w-full bg-slate-900 border border-white/10 p-4 text-white outline-none focus:border-emerald-500">
             <div class="flex flex-col gap-1 relative">
@@ -742,23 +732,33 @@
         <!-- Humedad con barra -->
         <div class="mb-4">
           <div class="flex justify-between items-baseline mb-1">
-            <span class="text-[10px] text-slate-500 uppercase">Humedad Suelo</span>
-            <span class="text-2xl font-mono font-bold" [ngClass]="getHumedadClass(zona.ultimaHumedadSuelo)">
+            <div class="flex flex-col">
+              <span class="text-[10px] text-slate-500 uppercase leading-none">Humedad Suelo</span>
+              <span class="text-[8px] text-slate-600 mt-1 uppercase font-bold tracking-tighter">
+                Rango Óptimo: {{ zona.humSueloMinConfig }}% - {{ zona.humSueloMaxConfig }}%
+              </span>
+            </div>
+            <span class="text-2xl font-mono font-bold" [ngClass]="getHumedadClass(zona.ultimaHumedadSuelo, zona)">
               {{ zona.ultimaHumedadSuelo ?? '--' }}%
             </span>
           </div>
           <div class="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
             <div class="h-full transition-all rounded-full"
-              [ngClass]="getHumedadClass(zona.ultimaHumedadSuelo) === 'text-red-400' ? 'bg-red-500' : getHumedadClass(zona.ultimaHumedadSuelo) === 'text-blue-400' ? 'bg-blue-500' : 'bg-emerald-500'"
+              [ngClass]="getHumedadClass(zona.ultimaHumedadSuelo, zona) === 'text-red-400' ? 'bg-red-500' : getHumedadClass(zona.ultimaHumedadSuelo, zona) === 'text-blue-400' ? 'bg-blue-500' : 'bg-emerald-500'"
               [style.width.%]="getBarWidth(zona.ultimaHumedadSuelo)">
             </div>
           </div>
         </div>
         <!-- Temperatura -->
         <div class="mb-6 text-center">
-          <div class="bg-white/5 rounded p-2">
-            <p class="text-[9px] text-slate-500 uppercase">Temperatura</p>
-            <p class="text-white font-mono font-bold">{{ zona.ultimaTemperatura ?? "--" }}°C</p>
+          <div class="bg-white/5 rounded p-2 flex justify-between items-center px-4">
+            <div>
+              <p class="text-[9px] text-slate-500 uppercase text-left leading-none">Temperatura</p>
+              <p class="text-[7px] text-orange-500 font-black uppercase mt-1">Límite: {{ zona.tempMaxConfig }}°C</p>
+            </div>
+            <p class="font-mono font-bold" [ngClass]="zona.ultimaTemperatura > zona.tempMaxConfig ? 'text-red-400' : 'text-white'">
+              {{ zona.ultimaTemperatura ?? "--" }}°C
+            </p>
           </div>
         </div>
 

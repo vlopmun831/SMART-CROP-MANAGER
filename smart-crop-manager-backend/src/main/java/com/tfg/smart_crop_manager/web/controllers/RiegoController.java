@@ -26,72 +26,71 @@ import com.tfg.smart_crop_manager.services.exceptions.ZonaCultivoNotFoundExcepti
 @RestController
 @RequestMapping("riego")
 public class RiegoController {
-	
+
 	@Autowired
-    private RiegoService riegoService;
+	private RiegoService riegoService;
 
-    // Requisito: Controlar el riego de cada zona (Iniciar riego)
-    @PostMapping("/zona/{idZona}/iniciar")
-    public ResponseEntity<?> iniciarRiego(
-        @PathVariable Integer idZona,
-        @RequestParam(required = false) LocalDateTime horaInicio) { 
-        
-        try {
-        	Riego nuevo = this.riegoService.iniciarRiego(idZona, horaInicio);
-            return ResponseEntity.status(HttpStatus.CREATED).body(RiegoMapper.toDTO(nuevo));
-        } catch (ZonaCultivoNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        }
-    }
-    
- // Nuevo endpoint: Finalizar riego directamente por el ID de la Zona
-    @PutMapping("/zona/{idZona}/finalizar")
-    public ResponseEntity<?> finalizarRiegoPorZona(@PathVariable Integer idZona) {
-        try {
-            // Asumiendo que tu RiegoService tiene un método que busca el riego activo de una zona y lo cierra
-            Riego finalizado = this.riegoService.finalizarRiegoActivoPorZona(idZona);
-            return ResponseEntity.ok(RiegoMapper.toDTO(finalizado));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
-    }
-    
-    // Controlar el riego (Finalizar riego)
-    @PutMapping("/{idRiego}/finalizar")
-    public ResponseEntity<?> finalizarRiego(
-        @PathVariable Integer idRiego,
-        @RequestParam(required = false) LocalDateTime horaFin) {
-        
-        try {
-        	Riego finalizado = this.riegoService.finalizarRiego(idRiego, horaFin);
-            return ResponseEntity.ok(RiegoMapper.toDTO(finalizado));
-        } catch (RiegoNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (RiegoException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
-    }
+	// Requisito: Controlar el riego de cada zona (Iniciar riego)
+	@PostMapping("/zona/{idZona}/iniciar")
+	public ResponseEntity<?> iniciarRiego(@PathVariable Integer idZona,
+			@RequestParam(required = false) LocalDateTime horaInicio) {
 
-    // Consultar el historial de riego de una zona
-    @GetMapping("/zona/{idZona}/historial")
-    public ResponseEntity<?> obtenerHistorialRiego(@PathVariable Integer idZona) {
-        try {
-        	List<RiegoDTO> historial = this.riegoService.findByZonaCultivoId(idZona);
-            return ResponseEntity.ok(historial);
-        } catch (ZonaCultivoNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        }
-    }
-    
-    // Eliminar un registro de riego
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> eliminarRiego(@PathVariable Integer id) {
-        try {
-            this.riegoService.delete(id);
-            return ResponseEntity.ok().build();
-        } catch (RiegoNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        }
-    }
+		try {
+			Riego nuevo = this.riegoService.iniciarRiego(idZona, horaInicio);
+			return ResponseEntity.status(HttpStatus.CREATED).body(RiegoMapper.toDTO(nuevo));
+		} catch (ZonaCultivoNotFoundException e) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+		}
+	}
+
+	// Nuevo endpoint: Finalizar riego directamente por el ID de la Zona
+	@PutMapping("/zona/{idZona}/finalizar")
+	public ResponseEntity<?> finalizarRiegoPorZona(@PathVariable Integer idZona) {
+		try {
+			// Asumiendo que tu RiegoService tiene un método que busca el riego activo de
+			// una zona y lo cierra
+			Riego finalizado = this.riegoService.finalizarRiegoActivoPorZona(idZona);
+			return ResponseEntity.ok(RiegoMapper.toDTO(finalizado));
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+		}
+	}
+
+	// Controlar el riego (Finalizar riego)
+	@PutMapping("/{idRiego}/finalizar")
+	public ResponseEntity<?> finalizarRiego(@PathVariable Integer idRiego,
+			@RequestParam(required = false) LocalDateTime horaFin) {
+
+		try {
+			Riego finalizado = this.riegoService.finalizarRiego(idRiego, horaFin);
+			return ResponseEntity.ok(RiegoMapper.toDTO(finalizado));
+		} catch (RiegoNotFoundException e) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+		} catch (RiegoException e) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+		}
+	}
+
+	// Consultar el historial de riego de una zona
+	@GetMapping("/zona/{idZona}/historial")
+	public ResponseEntity<?> obtenerHistorialRiego(@PathVariable Integer idZona) {
+		try {
+			List<RiegoDTO> historial = this.riegoService.findByZonaCultivoId(idZona);
+			return ResponseEntity.ok(historial);
+		} catch (ZonaCultivoNotFoundException e) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+		}
+	}
+
+	// Eliminar un registro de riego
+	@DeleteMapping("/{id}")
+	public ResponseEntity<?> eliminarRiego(@PathVariable Integer id) {
+		try {
+			this.riegoService.delete(id);
+			return ResponseEntity.ok().build();
+		} catch (RiegoNotFoundException e) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+		}
+	}
 
 }

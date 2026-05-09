@@ -277,19 +277,23 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.usuarioService.getUsuarios().subscribe(data => this.usuarios.set(data));
   }
 
-  guardarZona() {
-    const zonaAEnviar = { ...this.nuevaZona };
-    if (!zonaAEnviar.usuario.id) {
-      zonaAEnviar.usuario = null as any;
+  guardarNuevaZona() {
+    // Validación de campos obligatorios
+    if (!this.nuevaZona.varCultivo || !this.nuevaZona.ubicacion || 
+        this.nuevaZona.humSueloMinConfig === null || this.nuevaZona.humSueloMaxConfig === null || 
+        this.nuevaZona.tempMaxConfig === null || !this.nuevaZona.usuario.id) {
+      Swal.fire('Campos incompletos', 'Por favor, rellena todos los datos de la parcela y asigna un operario.', 'warning');
+      return;
     }
-    this.zonaService.crearZona(zonaAEnviar).subscribe({
+
+    this.zonaService.crearZona(this.nuevaZona).subscribe({
       next: () => {
-        Swal.fire({ title: 'Zona Configurada', text: 'La parcela se ha vinculado al sistema correctamente.', icon: 'success', background: '#0f172a', color: '#ffffff', timer: 2000, showConfirmButton: false });
+        Swal.fire('¡Éxito!', 'Parcela configurada correctamente.', 'success');
         this.verFormZona.set(false);
         this.limpiarFormZona();
         this.cargarDatosSegunRol();
       },
-      error: () => Swal.fire('Error', 'No se pudo crear la zona', 'error')
+      error: () => Swal.fire('Error', 'No se pudo crear la parcela.', 'error')
     });
   }
 
@@ -308,15 +312,21 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   guardarEdicionZona() {
-    const payload = { ...this.zonaEditando };
-    this.zonaService.modificarZona(payload.id, payload).subscribe({
+    if (!this.zonaEditando.varCultivo || !this.zonaEditando.ubicacion || 
+        this.zonaEditando.humSueloMinConfig === null || this.zonaEditando.humSueloMaxConfig === null || 
+        this.zonaEditando.tempMaxConfig === null) {
+      Swal.fire('Campos incompletos', 'Todos los umbrales y datos son obligatorios.', 'warning');
+      return;
+    }
+
+    this.zonaService.modificarZona(this.zonaEditando.id, this.zonaEditando).subscribe({
       next: () => {
-        Swal.fire({ title: '¡Actualizada!', text: 'La zona ha sido modificada.', icon: 'success', background: '#0f172a', color: '#ffffff', timer: 1800, showConfirmButton: false });
+        Swal.fire('¡Actualizado!', 'La parcela ha sido modificada.', 'success');
         this.verFormEditarZona.set(false);
         this.zonaEditando = null;
         this.cargarDatosSegunRol();
       },
-      error: () => Swal.fire('Error', 'No se pudo guardar los cambios.', 'error')
+      error: () => Swal.fire('Error', 'No se pudo actualizar la parcela.', 'error')
     });
   }
 
@@ -459,15 +469,20 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────────
-  getHumedadClass(valor: number | null): string {
+  getHumedadClass(valor: number | null, zona?: any): string {
     if (valor === null || valor === undefined) return 'text-slate-500';
-    if (valor < 30) return 'text-red-400';
-    if (valor > 80) return 'text-blue-400';
+    
+    // Si la zona tiene configuración personalizada, la usamos. Si no, valores por defecto.
+    const min = (zona && zona.humSueloMinConfig != null) ? zona.humSueloMinConfig : 30;
+    const max = (zona && zona.humSueloMaxConfig != null) ? zona.humSueloMaxConfig : 80;
+
+    if (valor < min) return 'text-red-400';
+    if (valor > max) return 'text-blue-400';
     return 'text-emerald-400';
   }
 
   getBarWidth(valor: number | null): number {
-    if (!valor) return 0;
+    if (valor === null || valor === undefined) return 0;
     return Math.min(100, Math.max(0, valor));
   }
   // Parsea fechas del backend: "19-03-2026 20:12:42" (DD-MM-YYYY HH:mm:ss)

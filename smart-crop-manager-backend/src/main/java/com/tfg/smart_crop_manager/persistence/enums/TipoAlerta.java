@@ -2,18 +2,16 @@ package com.tfg.smart_crop_manager.persistence.enums;
 
 public enum TipoAlerta {
 
-	  // SUELO
+	// SUELO
 
-    SUELO_SECO,           // Falta agua 
+	SUELO_SECO, // Falta agua
 
-    SUELO_ENCHARCADO,     // Exceso de agua (riesgo de pudrición)
+	SUELO_ENCHARCADO, // Exceso de agua (riesgo de pudrición)
 
-    // AMBIENTE
+	// AMBIENTE
 
-    CALOR_EXTREMO,        // Evita regar a mediodía o indica estrés
+	CALOR_EXTREMO, // Evita regar a mediodía o indica estrés
 
-    LLUVIA_DETECTADA,     // El sensor físico detecta precipitación actual
+	LLUVIA_DETECTADA, // El sensor físico detecta precipitación actual
 
-}	
-	
-
+}

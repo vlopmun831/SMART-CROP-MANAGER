@@ -17,28 +17,22 @@ import com.tfg.smart_crop_manager.services.exceptions.UsuarioException;
 import com.tfg.smart_crop_manager.services.exceptions.UsuarioNotFoundException;
 
 @Service
-public class UsuarioService implements UserDetailsService{
+public class UsuarioService implements UserDetailsService {
 
 	@Autowired
 	private UsuarioRepository usuarioRepository;
-	
+
 //	@Autowired
 //    private PasswordEncoder passwordEncoder;
-	
-	
-	
+
 	@Override
 	public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
 
 		Usuario usuario = this.usuarioRepository.findByEmail(email)
-				.orElseThrow(
-				() -> new UsernameNotFoundException("El email " + email + " no existe. "));
-		
-		return User.builder()
-				.username(usuario.getEmail())
-				.password(usuario.getPassword())
-				.roles(usuario.getRol().name())
-				.build();
+				.orElseThrow(() -> new UsernameNotFoundException("El email " + email + " no existe. "));
+
+		return User.builder().username(usuario.getEmail()).password(usuario.getPassword())
+				.roles(usuario.getRol().name()).build();
 	}
 
 	public List<Usuario> findAll() {
@@ -58,7 +52,7 @@ public class UsuarioService implements UserDetailsService{
 
 	public Usuario create(Usuario usuario) {
 		usuario.setPassword(new BCryptPasswordEncoder().encode(usuario.getPassword()));
-		if(usuario.getZonasCultivo() != null) {
+		if (usuario.getZonasCultivo() != null) {
 			for (ZonaCultivo zona : usuario.getZonasCultivo()) {
 				zona.setUsuario(usuario);
 			}

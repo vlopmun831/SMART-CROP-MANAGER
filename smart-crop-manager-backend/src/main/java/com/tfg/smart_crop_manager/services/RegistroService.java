@@ -78,7 +78,6 @@ public class RegistroService {
 		return registroGuardado;
 	}
 
-	// Aqui procesariamos su lectura
 	// Aqui procesariamos su lectura (Desde la placa física)
 	public Registro procesarLecturaSensor(SensorPayloadDTO payload) {
 		// 1. Buscamos la zona a la que pertenece el sensor

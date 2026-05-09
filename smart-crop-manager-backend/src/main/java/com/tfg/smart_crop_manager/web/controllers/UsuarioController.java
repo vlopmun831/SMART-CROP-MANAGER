@@ -24,11 +24,10 @@ import com.tfg.smart_crop_manager.services.exceptions.UsuarioNotFoundException;
 @RestController
 @RequestMapping("usuario")
 public class UsuarioController {
-	
-	
+
 	@Autowired
-	private  UsuarioService usuarioService;
-	
+	private UsuarioService usuarioService;
+
 	@GetMapping
 	public ResponseEntity<List<UsuarioDTO>> findAll() {
 		List<Usuario> usuarios = this.usuarioService.findAll();
@@ -65,14 +64,14 @@ public class UsuarioController {
 
 		try {
 			Usuario usuarioAct = this.usuarioService.update(usuario, id);
-	        return ResponseEntity.ok(UsuarioMapper.toDTO(usuarioAct));
+			return ResponseEntity.ok(UsuarioMapper.toDTO(usuarioAct));
 
 		} catch (UsuarioNotFoundException ex) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
 		}
 
 	}
-  
+
 	@DeleteMapping("/{id}")
 	public ResponseEntity<?> delete(@PathVariable Integer id) {
 
@@ -83,7 +82,5 @@ public class UsuarioController {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
 		}
 	}
-
-	
 
 }

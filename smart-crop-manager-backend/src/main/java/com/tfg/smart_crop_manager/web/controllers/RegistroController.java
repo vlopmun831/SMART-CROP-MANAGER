@@ -62,7 +62,8 @@ public class RegistroController {
 					.body("La Zona de Cultivo especificada para el registro no existe.");
 		}
 	}
-	//En caso real de conexion con sensores
+
+	// En caso real de conexion con sensores
 	@PostMapping("/iot/recepcion")
 	public ResponseEntity<?> recibirDatosDispositivoIoT(@RequestBody SensorPayloadDTO payload) {
 		try {

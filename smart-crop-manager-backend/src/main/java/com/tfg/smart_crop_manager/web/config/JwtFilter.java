@@ -15,36 +15,33 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-
-
 @Component
-public class JwtFilter extends OncePerRequestFilter{
-	
+public class JwtFilter extends OncePerRequestFilter {
+
 	@Autowired
-    private JwtUtils jwtUtils;
+	private JwtUtils jwtUtils;
 
-    @Autowired
-    private UserDetailsService userDetailsService;
+	@Autowired
+	private UserDetailsService userDetailsService;
 
-    
-    @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException {
+	@Override
+	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+			throws ServletException, IOException {
 
-        String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+		String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
 
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String jwt = authHeader.substring(7);
-            if (jwtUtils.isValid(jwt)) {
-                String email = jwtUtils.getEmail(jwt);
-                UserDetails user = userDetailsService.loadUserByUsername(email);
+		if (authHeader != null && authHeader.startsWith("Bearer ")) {
+			String jwt = authHeader.substring(7);
+			if (jwtUtils.isValid(jwt)) {
+				String email = jwtUtils.getEmail(jwt);
+				UserDetails user = userDetailsService.loadUserByUsername(email);
 
-                UsernamePasswordAuthenticationToken token = 
-                    new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword(), user.getAuthorities());
-                
-                SecurityContextHolder.getContext().setAuthentication(token);
-            }
-        }
-        filterChain.doFilter(request, response);
-    }
+				UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(user.getUsername(),
+						user.getPassword(), user.getAuthorities());
+
+				SecurityContextHolder.getContext().setAuthentication(token);
+			}
+		}
+		filterChain.doFilter(request, response);
+	}
 }

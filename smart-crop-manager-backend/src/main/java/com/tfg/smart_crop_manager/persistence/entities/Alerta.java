@@ -25,28 +25,27 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class Alerta {
-	
-	  @Id
-	    @GeneratedValue(strategy = GenerationType.IDENTITY)
-	    private Integer id;
 
-	    @Enumerated(EnumType.STRING)
-	    private TipoAlerta tipoAlerta;
-	    
-	    private String descripcion;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Integer id;
 
-	    private Double max;
-	    private Double min;
+	@Enumerated(EnumType.STRING)
+	private TipoAlerta tipoAlerta;
 
-	    @Enumerated(EnumType.STRING)
-	    private EstadoAlerta estado;
-	    
-	    
-	    @JsonFormat(pattern = "dd-MM-yyyy HH:mm:ss")
-	    private LocalDateTime fecha;
-	
-	 // Relación N:1 con ZonaCultivo
-	    @ManyToOne
-	    @JoinColumn(name = "id_zona", nullable = false)
-	    private ZonaCultivo zonaCultivo;
+	private String descripcion;
+
+	private Double max;
+	private Double min;
+
+	@Enumerated(EnumType.STRING)
+	private EstadoAlerta estado;
+
+	@JsonFormat(pattern = "dd-MM-yyyy HH:mm:ss")
+	private LocalDateTime fecha;
+
+	// Relación N:1 con ZonaCultivo
+	@ManyToOne
+	@JoinColumn(name = "id_zona", nullable = false)
+	private ZonaCultivo zonaCultivo;
 }

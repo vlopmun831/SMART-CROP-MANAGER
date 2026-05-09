@@ -14,19 +14,16 @@ import lombok.Setter;
 @NoArgsConstructor
 public class AlertaDTO {
 	private Integer id;
-    private TipoAlerta tipo;
-    private EstadoAlerta estado;
-    private Double max;
-    private Double min;
-    private LocalDateTime fecha;
-    private String nombreUsuario;
-    
-    // Solo enviamos el ID y quizás el nombre de la zona para el agricultor
+	private TipoAlerta tipo;
+	private EstadoAlerta estado;
+	private Double max;
+	private Double min;
+	private LocalDateTime fecha;
+	private String nombreUsuario;
 
-    private Integer idZona;
-    private String nombreZona;
-    
- 
+	// Solo enviamos el ID y quizás el nombre de la zona para el agricultor
+
+	private Integer idZona;
+	private String nombreZona;
+
 }
-
-

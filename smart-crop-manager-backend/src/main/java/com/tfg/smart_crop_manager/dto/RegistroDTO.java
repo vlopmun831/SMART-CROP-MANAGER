@@ -12,22 +12,20 @@ import lombok.Setter;
 @Getter
 @Setter
 public class RegistroDTO {
-	
+
 	private Integer id;
-	
+
 	@JsonFormat(pattern = "dd-MM-yyyy HH:mm:ss")
-    private LocalDateTime fecha;
-	
-    private Double temperatura;
-    
-    private Double humedadSuelo;
-    
-    
-    private boolean lluvia;
-    
-    // Solo info necesaria de la zona para evitar recursividad
-    private Integer idZona;
-    private String ubicacionZona;
-	
+	private LocalDateTime fecha;
+
+	private Double temperatura;
+
+	private Double humedadSuelo;
+
+	private boolean lluvia;
+
+	// Solo info necesaria de la zona para evitar recursividad
+	private Integer idZona;
+	private String ubicacionZona;
 
 }

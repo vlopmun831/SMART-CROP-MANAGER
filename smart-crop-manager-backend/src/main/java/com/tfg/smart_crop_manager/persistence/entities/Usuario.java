@@ -1,6 +1,5 @@
 package com.tfg.smart_crop_manager.persistence.entities;
 
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,35 +27,28 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class Usuario {
-	
-	  @Id
-	    @GeneratedValue(strategy = GenerationType.IDENTITY)
-	    private Integer id;
-	  	
-	    private String nombre;
 
-	    @Email(message = "Debe proporcionar un email válido")
-	    @NotBlank(message = "El email es obligatorio")
-	    @Column(nullable = false, unique = true,length = 100 )
-	    private String email;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Integer id;
 
-	    @Column(nullable = false)
-	    private String password;
-	    
-	    @Enumerated(EnumType.STRING) 
-	    @Column(name = "rol", nullable = false)
-	    private Rol rol;
+	private String nombre;
 
-	   
-	    
-	  
+	@Email(message = "Debe proporcionar un email válido")
+	@NotBlank(message = "El email es obligatorio")
+	@Column(nullable = false, unique = true, length = 100)
+	private String email;
 
+	@Column(nullable = false)
+	private String password;
 
-	 // Relación 1:N con ZonaCultivo (el usuario gestiona varias zonas)
-	    // El atributo 'usuario' en ZonaCultivo es el campo de mapeo (mappedBy)
-	    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
-	    
-	    private List<ZonaCultivo> zonasCultivo = new ArrayList<>();//Con esto evito que me de un NULL POinter Exception
-	}
+	@Enumerated(EnumType.STRING)
+	@Column(name = "rol", nullable = false)
+	private Rol rol;
 
-  
+	// Relación 1:N con ZonaCultivo (el usuario gestiona varias zonas)
+	// El atributo 'usuario' en ZonaCultivo es el campo de mapeo (mappedBy)
+	@OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
+
+	private List<ZonaCultivo> zonasCultivo = new ArrayList<>();// Con esto evito que me de un NULL POinter Exception
+}

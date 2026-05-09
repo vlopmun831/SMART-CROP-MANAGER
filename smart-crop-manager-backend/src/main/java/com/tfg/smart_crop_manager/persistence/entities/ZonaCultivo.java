@@ -32,8 +32,6 @@ public class ZonaCultivo {
 
 	private String ubicacion;
 
-	// --- NUEVOS CAMPOS PARA EL ADMINISTRADOR ---
-	// Estos campos permiten personalizar los límites de cada zona
 	private Double humSueloMinConfig; // Para alertas de SUELO_SECO
 	private Double humSueloMaxConfig; // Para alertas de SUELO_ENCHARCADO
 	private Double tempMaxConfig; // Para alertas de CALOR_EXTREMO

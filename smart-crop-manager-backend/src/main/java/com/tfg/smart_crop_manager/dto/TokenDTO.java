@@ -11,9 +11,9 @@ import lombok.Setter;
 @AllArgsConstructor
 public class TokenDTO {
 	private String token;
-    private String email;
-    private String rol;
-    private String nombre; 
-    private Integer id;
-	
+	private String email;
+	private String rol;
+	private String nombre;
+	private Integer id;
+
 }

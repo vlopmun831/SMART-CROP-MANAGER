@@ -22,27 +22,24 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class Registro {
-	
-	 @Id
-	    @GeneratedValue(strategy = GenerationType.IDENTITY)
-	    private Integer id;
 
-	 	@JsonFormat(pattern = "dd-MM-yyyy HH:mm:ss")
-	    private LocalDateTime fecha;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Integer id;
 
-	    private Double temperatura;
-	    
-	    @Column(name = "humedad_suelo") 
-	    private Double humedadSuelo;
-	    
-	   
-	    
-	    private boolean lluvia;
-	    
-	    
-	 // Relación N:1 con ZonaCultivo
-	    @ManyToOne
-	    @JoinColumn(name = "id_zona", nullable = false) // Mapeo a IdZona: Integer
-	    private ZonaCultivo zonaCultivo;
+	@JsonFormat(pattern = "dd-MM-yyyy HH:mm:ss")
+	private LocalDateTime fecha;
+
+	private Double temperatura;
+
+	@Column(name = "humedad_suelo")
+	private Double humedadSuelo;
+
+	private boolean lluvia;
+
+	// Relación N:1 con ZonaCultivo
+	@ManyToOne
+	@JoinColumn(name = "id_zona", nullable = false) // Mapeo a IdZona: Integer
+	private ZonaCultivo zonaCultivo;
 
 }

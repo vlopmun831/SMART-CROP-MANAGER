@@ -7,38 +7,36 @@ import com.tfg.smart_crop_manager.dto.AlertaDTO;
 import com.tfg.smart_crop_manager.persistence.entities.Alerta;
 
 public class AlertaMapper {
-	
+
 	public static AlertaDTO toDTO(Alerta alerta) {
-		if (alerta == null) return null;
+		if (alerta == null)
+			return null;
 
-        AlertaDTO dto = new AlertaDTO();
-        dto.setId(alerta.getId());
-		dto.setTipo(alerta.getTipoAlerta()); 
-        dto.setEstado(alerta.getEstado());
-        
-        dto.setFecha(alerta.getFecha());
-        dto.setMax(alerta.getMax());
-        dto.setMin(alerta.getMin());
+		AlertaDTO dto = new AlertaDTO();
+		dto.setId(alerta.getId());
+		dto.setTipo(alerta.getTipoAlerta());
+		dto.setEstado(alerta.getEstado());
 
-        if (alerta.getZonaCultivo() != null) {
-            dto.setIdZona(alerta.getZonaCultivo().getId());
-            dto.setNombreZona(alerta.getZonaCultivo().getUbicacion());
-            if (alerta.getZonaCultivo().getUsuario() != null) {
-                dto.setNombreUsuario(alerta.getZonaCultivo().getUsuario().getNombre());
-            } else {
-                dto.setNombreUsuario("Sin asignar");
-            }
-        
-        
-        }
+		dto.setFecha(alerta.getFecha());
+		dto.setMax(alerta.getMax());
+		dto.setMin(alerta.getMin());
 
-        return dto;
-    }
+		if (alerta.getZonaCultivo() != null) {
+			dto.setIdZona(alerta.getZonaCultivo().getId());
+			dto.setNombreZona(alerta.getZonaCultivo().getUbicacion());
+			if (alerta.getZonaCultivo().getUsuario() != null) {
+				dto.setNombreUsuario(alerta.getZonaCultivo().getUsuario().getNombre());
+			} else {
+				dto.setNombreUsuario("Sin asignar");
+			}
 
-    public static List<AlertaDTO> toDTOList(List<Alerta> alertas) {
-        return alertas.stream()
-                      .map(AlertaMapper::toDTO)
-                      .collect(Collectors.toList());
-    }
-	    
+		}
+
+		return dto;
+	}
+
+	public static List<AlertaDTO> toDTOList(List<Alerta> alertas) {
+		return alertas.stream().map(AlertaMapper::toDTO).collect(Collectors.toList());
+	}
+
 }

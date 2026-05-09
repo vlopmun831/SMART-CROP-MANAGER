@@ -15,11 +15,10 @@ public class ZonaCultivoDTO {
 	private Integer id;
 	private String varCultivo;
 	private String ubicacion;
-	
+
 	private Double humSueloMinConfig;
 	private Double humSueloMaxConfig;
 	private Double tempMaxConfig;
-
 
 	// Nos traemos también el nombre del usuario y su id
 	private String nombreUsuario;

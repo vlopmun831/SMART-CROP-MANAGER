@@ -98,14 +98,14 @@ public class AlertaService {
 	}
 
 	public void resolverAlertaPorZonaYTipo(Integer idZona, TipoAlerta tipo) {
-	    // Buscamos las alertas pendientes de esa zona y de ese tipo específico
-	    List<Alerta> alertasPendientes = alertaRepository.findByZonaCultivoIdAndTipoAlertaAndEstado(
-	            idZona, tipo, EstadoAlerta.PENDIENTE);
+		// Buscamos las alertas pendientes de esa zona y de ese tipo específico
+		List<Alerta> alertasPendientes = alertaRepository.findByZonaCultivoIdAndTipoAlertaAndEstado(idZona, tipo,
+				EstadoAlerta.PENDIENTE);
 
-	    for (Alerta alerta : alertasPendientes) {
-	        alerta.setEstado(EstadoAlerta.RESUELTA);
-	        alertaRepository.save(alerta);
-	        System.out.println("✅ Alerta de " + tipo + " resuelta automáticamente para la zona ID: " + idZona);
-	    }
+		for (Alerta alerta : alertasPendientes) {
+			alerta.setEstado(EstadoAlerta.RESUELTA);
+			alertaRepository.save(alerta);
+			System.out.println("✅ Alerta de " + tipo + " resuelta automáticamente para la zona ID: " + idZona);
+		}
 	}
 }

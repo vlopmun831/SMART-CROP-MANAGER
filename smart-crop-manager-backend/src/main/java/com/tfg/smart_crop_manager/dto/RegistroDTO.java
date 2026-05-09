@@ -22,7 +22,6 @@ public class RegistroDTO {
     
     private Double humedadSuelo;
     
-    private Double humedadAire;
     
     private boolean lluvia;
     

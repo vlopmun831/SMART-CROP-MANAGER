@@ -35,9 +35,7 @@ public class Registro {
 	    @Column(name = "humedad_suelo") 
 	    private Double humedadSuelo;
 	    
-	    @Column(name = "humedad_aire") 
-	    private Double humedadAire;
-	    
+	   
 	    
 	    private boolean lluvia;
 	    

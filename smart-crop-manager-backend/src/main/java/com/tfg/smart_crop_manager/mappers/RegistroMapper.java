@@ -17,7 +17,6 @@ public class RegistroMapper {
         dto.setFecha(registro.getFecha());
         dto.setTemperatura(registro.getTemperatura());
         dto.setHumedadSuelo(registro.getHumedadSuelo());
-        dto.setHumedadAire(registro.getHumedadAire());
         dto.setLluvia(registro.isLluvia());
 
         // Extraemos datos de la zona relacionada

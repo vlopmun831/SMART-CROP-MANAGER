@@ -1,10 +1,11 @@
-import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { AuthService } from '../../core/services/auth';
 import { ZonaService } from '../../core/services/zona/zona';
 import { FormsModule } from '@angular/forms';
 import { UsuarioService } from '../../core/services/usuario/usuario';
 import { AlertaService } from '../../core/services/alerta/alerta';
+import { WeatherService } from '../../core/services/weather/weather';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -14,21 +15,24 @@ import Swal from 'sweetalert2';
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, OnDestroy {
   // ── Servicios ──────────────────────────────────────────────────────────────
   public authService = inject(AuthService);
   private zonaService = inject(ZonaService);
   private usuarioService = inject(UsuarioService);
   private alertaService = inject(AlertaService);
+  private weatherService = inject(WeatherService);
 
   // ── Datos ──────────────────────────────────────────────────────────────────
   public zonas = signal<any[]>([]);
   public usuarios = signal<any[]>([]);
   public alertasPendientes = signal<any[]>([]);
+  public weather = signal<any>(null);
 
   // ── KPIs (admin) ──────────────────────────────────────────────────────────
   public totalZonas = signal<number>(0);
   public totalAlertasGlobales = signal<number>(0);
+  private pollingInterval: any;
   public totalUsuarios = signal<number>(0);
 
   // ── Visibilidad de secciones (admin) ─────────────────────────────────────
@@ -42,6 +46,8 @@ export class DashboardComponent implements OnInit {
   public vistaUsuario = signal<'dashboard' | 'historial'>('dashboard');
   public zonaSeleccionada = signal<any>(null);
   public historialDatos = signal<any[]>([]);
+  public historialRiego = signal<any[]>([]);
+  public pestanaHistorial = signal<'sensores' | 'riego'>('sensores');
   public cargandoHistorial = signal(false);
 
   // ── Riego activo (guarda el ID del registro de riego devuelto por el back) ─
@@ -55,8 +61,11 @@ export class DashboardComponent implements OnInit {
 
   operariosFiltrados = computed(() => {
     const query = this.busquedaOperario().toLowerCase();
+    const currentId = this.authService.userId();
     return this.usuarios().filter(u =>
-      u.rol !== 'ADMIN' &&
+      u.id !== currentId &&
+      u.rol?.toUpperCase() !== 'ADMIN' &&
+      !u.rol?.toUpperCase().includes('ADMIN') &&
       (u.nombre.toLowerCase().includes(query) || u.email.toLowerCase().includes(query))
     );
   });
@@ -65,8 +74,11 @@ export class DashboardComponent implements OnInit {
   busquedaUsuariosListado = signal('');
   usuariosFiltradosListado = computed(() => {
     const query = this.busquedaUsuariosListado().toLowerCase();
+    const currentId = this.authService.userId();
     return this.usuarios().filter(u =>
-      u.rol !== 'ADMIN' &&
+      u.id !== currentId &&
+      u.rol?.toUpperCase() !== 'ADMIN' &&
+      !u.rol?.toUpperCase().includes('ADMIN') &&
       (u.nombre.toLowerCase().includes(query) || u.email.toLowerCase().includes(query))
     );
   });
@@ -102,6 +114,27 @@ export class DashboardComponent implements OnInit {
   // ──────────────────────────────────────────────────────────────────────────
   ngOnInit() {
     this.cargarDatosSegunRol();
+    this.cargarClima();
+    // Refresco automático cada 5 segundos
+    this.pollingInterval = setInterval(() => {
+      this.cargarDatosSegunRol();
+    }, 5000);
+    
+    // Refresco de clima cada 30 minutos
+    setInterval(() => this.cargarClima(), 1800000);
+  }
+
+  cargarClima() {
+    this.weatherService.getWeather().subscribe({
+      next: (data) => this.weather.set(data),
+      error: (err) => console.error('Error al cargar clima', err)
+    });
+  }
+
+  ngOnDestroy() {
+    if (this.pollingInterval) {
+      clearInterval(this.pollingInterval);
+    }
   }
 
   cargarDatosSegunRol() {
@@ -117,7 +150,12 @@ export class DashboardComponent implements OnInit {
       this.usuarioService.getUsuarios().subscribe(data => {
         this.usuarios.set(data);
         // Solo contamos operarios (no admins) para el KPI
-        const operarios = data.filter((u: any) => u.rol !== 'ADMIN');
+        const currentId = this.authService.userId();
+        const operarios = data.filter((u: any) => 
+          u.id !== currentId && 
+          u.rol?.toUpperCase() !== 'ADMIN' &&
+          !u.rol?.toUpperCase().includes('ADMIN')
+        );
         this.totalUsuarios.set(operarios.length);
       });
 
@@ -358,19 +396,30 @@ export class DashboardComponent implements OnInit {
   }
 
   tieneRiegoActivo(idZona: number): boolean {
-    return this.riegoActivo().has(idZona);
+    // 1. Estado manual (iniciado desde este navegador)
+    if (this.riegoActivo().has(idZona)) return true;
+
+    // 2. Estado automático (Sincronizado con las alertas del backend)
+    // Buscamos si hay una alerta de SUELO_SECO pendiente.
+    // Usamos varias comprobaciones por si el backend cambia el nombre del campo (idZona, zonaId, o zona.id)
+    return this.alertasPendientes().some(a => {
+      const matchZona = (a.idZona === idZona || a.zonaId === idZona || (a.zona && a.zona.id === idZona));
+      const matchTipo = (a.tipo === 'SUELO_SECO');
+      const matchEstado = (a.estado === 'PENDIENTE');
+      return matchZona && matchTipo && matchEstado;
+    });
   }
 
   // ── Historial de datos de sensores (USUARIO) ──────────────────────────────
   verHistorial(zona: any) {
     this.zonaSeleccionada.set(zona);
     this.vistaUsuario.set('historial');
+    this.pestanaHistorial.set('sensores');
     this.cargandoHistorial.set(true);
+    
+    // Cargar lecturas de sensores
     this.zonaService.getHistorialDatos(zona.id).subscribe({
       next: (data) => {
-        if (data.length > 0) {
-          console.log('CAMPOS DEL REGISTRO (primer elemento):', JSON.stringify(data[0]));
-        }
         this.historialDatos.set(data);
         this.cargandoHistorial.set(false);
       },
@@ -379,6 +428,28 @@ export class DashboardComponent implements OnInit {
         this.cargandoHistorial.set(false);
       }
     });
+
+    // Cargar historial de riego
+    this.zonaService.getHistorialRiego(zona.id).subscribe({
+      next: (data) => this.historialRiego.set(data),
+      error: (err) => console.error('Error al cargar historial de riego', err)
+    });
+  }
+
+  calcularMinutos(inicio: any, fin: any): string {
+    const d1 = this.parseDate(inicio);
+    if (!d1) return '---';
+
+    // Usamos 'fin' directamente para saber si está en curso
+    if (!fin) return 'En curso...';
+
+    const d2 = this.parseDate(fin);
+    if (!d2) return '---';
+
+    const diffMs = d2.getTime() - d1.getTime();
+    const diffMins = Math.round(diffMs / 60000);
+
+    return `${diffMins} min`;
   }
 
   volverAlDashboard() {

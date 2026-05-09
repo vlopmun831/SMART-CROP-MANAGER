@@ -12,6 +12,7 @@ import com.tfg.smart_crop_manager.dto.RiegoDTO;
 import com.tfg.smart_crop_manager.mappers.RiegoMapper;
 import com.tfg.smart_crop_manager.persistence.entities.Riego;
 import com.tfg.smart_crop_manager.persistence.entities.ZonaCultivo;
+import com.tfg.smart_crop_manager.persistence.enums.TipoAlerta; // Importante añadir
 import com.tfg.smart_crop_manager.persistence.repositories.RiegoRepository;
 import com.tfg.smart_crop_manager.services.exceptions.RiegoException;
 import com.tfg.smart_crop_manager.services.exceptions.RiegoNotFoundException;
@@ -24,6 +25,9 @@ public class RiegoService {
 	
 	@Autowired
 	private ZonaCultivoService zonaCultivoService;
+
+	@Autowired
+	private AlertaService alertaService; // Inyectado correctamente
     
 
     // Consultar el historial de riego para una zona
@@ -32,7 +36,8 @@ public class RiegoService {
         List<Riego> riegos = this.riegoRepository.findByZonaCultivoIdOrderByFechaDescHoraInicioDesc(idZona);
         return riegos.stream()
                 .map(RiegoMapper::toDTO)
-                .collect(Collectors.toList());    }
+                .collect(Collectors.toList());
+    }
     
 	public Riego findById(Integer id) {
 		if (id == null || !this.riegoRepository.existsById(id)) {
@@ -41,18 +46,13 @@ public class RiegoService {
 		return this.riegoRepository.findById(id).get();
 	}
 
-   
-    
-    // Controlar el riego (Iniciar riego y registrar)
+    // Iniciar riego y registrar
 	public Riego iniciarRiego(Integer idZona, LocalDateTime horaInicio) {
-        // En un proyecto real, aquí iría la llamada a la API del hardware
-        
         ZonaCultivo zona = zonaCultivoService.findById(idZona);
         
         Riego nuevoRiego = new Riego();
         nuevoRiego.setFecha(LocalDate.now());
         nuevoRiego.setHoraInicio(horaInicio != null ? horaInicio : LocalDateTime.now());
-        // La horaFin se podría establecer más tarde al detener el riego
         nuevoRiego.setZonaCultivo(zona);
         
 		return this.riegoRepository.save(nuevoRiego);
@@ -66,7 +66,7 @@ public class RiegoService {
             throw new RiegoNotFoundException("No hay ningún riego activo en esta zona para detener.");
         }
 
-        // 2. Lo cerramos (o los cerramos si por error hubiera más de uno)
+        // 2. Lo cerramos
         LocalDateTime ahora = LocalDateTime.now();
         Riego ultimoCerrado = null;
         
@@ -75,9 +75,14 @@ public class RiegoService {
             ultimoCerrado = this.riegoRepository.save(riego);
         }
         
+        // 3. ⚡ RESOLVER ALERTA AUTOMÁTICAMENTE ⚡
+        // Llamamos al método que creamos en AlertaService para que el Front se actualice
+        alertaService.resolverAlertaPorZonaYTipo(idZona, TipoAlerta.SUELO_SECO);
+        
         return ultimoCerrado;
     }
-    // Finalizar/Detener el riego (actualizando el registro existente)
+
+    // Finalizar/Detener el riego manual (por ID)
     public Riego finalizarRiego(Integer idRiego, LocalDateTime horaFin) {
         Riego riegoBD = this.findById(idRiego);
         
@@ -96,6 +101,4 @@ public class RiegoService {
 		}
 		this.riegoRepository.deleteById(id);
 	}
-	
-
 }

@@ -15,7 +15,6 @@ public class SensorPayloadDTO {
 	// Las lecturas directas de los pines del Arduino
 	private Double temperatura;
 	private Double humedadSuelo;
-	private Double humedadAire;
 	private boolean lluvia;
 
 	// Clave de seguridad para que nadie envíe datos falsos a tu API

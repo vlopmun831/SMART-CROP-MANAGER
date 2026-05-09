@@ -16,19 +16,195 @@
             authService.userName() }}</p>
         </div>
       </div>
-      <div class="text-right mt-4 md:mt-0 flex items-center gap-3">
-        @if (alertasPendientes().length > 0 && authService.userRole() === 'USUARIO') {
-        <span
-          class="animate-pulse text-[10px] bg-red-500/20 text-red-400 px-3 py-1 rounded border border-red-500/30 font-bold tracking-widest uppercase">
-          {{ alertasPendientes().length }} ALERTA(S)
-        </span>
+      <div class="text-right mt-4 md:mt-0 flex items-center gap-6">
+        <!-- Weather Widget (Premium) -->
+        @if (weather()) {
+        <div class="hidden lg:flex items-center gap-6 bg-white/5 border border-white/10 px-6 py-3 rounded-sm backdrop-blur-xl animate-fade-in">
+          <div class="text-4xl">{{ weather().icon }}</div>
+          <div class="border-l border-white/10 pl-6 text-left">
+            <p class="text-[8px] text-slate-500 font-black uppercase tracking-[0.2em] mb-1">
+              <span class="text-emerald-500 mr-1">📍</span> {{ weather().city }} — {{ weather().description }}
+            </p>
+            <div class="flex items-end gap-2">
+              <span class="text-2xl font-mono font-bold text-white leading-none">{{ weather().temp }}°C</span>
+              <span class="text-[8px] text-emerald-500 font-black tracking-widest mb-1">EXT</span>
+            </div>
+          </div>
+          <div class="border-l border-white/10 pl-6 flex flex-col gap-1 text-left">
+            <div class="flex items-center gap-2">
+              <span class="text-blue-400 text-[10px]">💧</span>
+              <span class="text-white text-[9px] font-mono">{{ weather().humidity }}% Hum.</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-slate-400 text-[10px]">💨</span>
+              <span class="text-white text-[9px] font-mono">{{ weather().wind }} km/h</span>
+            </div>
+          </div>
+        </div>
         }
-        <button (click)="authService.logout()"
-          class="text-[10px] bg-red-500/10 hover:bg-red-500/20 text-red-400 px-4 py-2 rounded border border-red-500/20 transition-all font-bold uppercase tracking-widest">
-          Cerrar Sesión
-        </button>
+
+        <div class="flex items-center gap-3">
+          @if (alertasPendientes().length > 0 && authService.userRole() === 'USUARIO') {
+          <span
+            class="animate-pulse text-[10px] bg-red-500/20 text-red-400 px-3 py-1 rounded border border-red-500/30 font-bold tracking-widest uppercase">
+            {{ alertasPendientes().length }} ALERTA(S)
+          </span>
+          }
+          <button (click)="authService.logout()"
+            class="text-[10px] bg-red-500/10 hover:bg-red-500/20 text-red-400 px-4 py-2 rounded border border-red-500/20 transition-all font-bold uppercase tracking-widest">
+            Cerrar Sesión
+          </button>
+        </div>
       </div>
     </header>
+
+    <!-- ------------------- VISTA COMPARTIDA: HISTORIAL ------------------- -->
+    @if (vistaUsuario() === 'historial' && zonaSeleccionada()) {
+    <div class="animate-fade-in">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 bg-black/20 p-6 border-l-4 border-blue-500 backdrop-blur-xl">
+        <div class="flex items-center gap-4">
+          <button (click)="volverAlDashboard()"
+            class="group text-[10px] bg-white/5 hover:bg-blue-600 text-slate-400 hover:text-white px-5 py-3 border border-white/10 hover:border-blue-500 uppercase font-black tracking-widest transition-all flex items-center gap-2">
+            <svg class="w-4 h-4 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Volver
+          </button>
+          <div>
+            <h2 class="text-2xl font-light text-white uppercase tracking-tighter">Historial de <span class="font-black text-blue-500">{{
+                zonaSeleccionada().varCultivo }}</span></h2>
+            <p class="text-[10px] text-slate-500 uppercase tracking-[0.3em] font-bold">{{ zonaSeleccionada().ubicacion }}</p>
+          </div>
+        </div>
+        
+        <div class="flex gap-3">
+          <div class="px-4 py-2 bg-white/5 border border-white/10 rounded">
+            <p class="text-[8px] text-slate-500 uppercase font-black mb-1">Registros Totales</p>
+            <p class="text-lg font-mono font-bold text-white">{{ historialDatos().length }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabs de Historial -->
+      <div class="flex gap-4 mb-6 border-b border-white/10">
+        <button (click)="pestanaHistorial.set('sensores')"
+          class="pb-3 text-[10px] font-bold uppercase tracking-widest transition-all"
+          [ngClass]="pestanaHistorial() === 'sensores' ? 'text-blue-400 border-b-2 border-blue-500' : 'text-slate-500 hover:text-white'">
+          Lecturas de Sensores
+        </button>
+        <button (click)="pestanaHistorial.set('riego')"
+          class="pb-3 text-[10px] font-bold uppercase tracking-widest transition-all"
+          [ngClass]="pestanaHistorial() === 'riego' ? 'text-emerald-400 border-b-2 border-emerald-500' : 'text-slate-500 hover:text-white'">
+          Historial de Riego
+        </button>
+      </div>
+
+      @if (cargandoHistorial()) {
+      <div class="flex flex-col items-center justify-center py-32 bg-black/20 border border-white/5 rounded-sm">
+        <div class="w-12 h-12 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin mb-4"></div>
+        <div class="text-blue-500 text-[10px] font-black uppercase tracking-[0.5em] animate-pulse">Sincronizando datos...
+        </div>
+      </div>
+      } @else {
+        
+        <!-- TAB: SENSORES -->
+        @if (pestanaHistorial() === 'sensores') {
+          @if (historialDatos().length === 0) {
+            <div class="bg-slate-900/40 border border-white/10 rounded-sm p-20 text-center backdrop-blur-xl">
+              <p class="text-slate-500 text-sm font-bold uppercase tracking-widest">No se encontraron lecturas</p>
+            </div>
+          } @else {
+            <div class="bg-black/40 border border-white/10 rounded-sm overflow-hidden backdrop-blur-xl shadow-2xl animate-fade-in">
+              <table class="w-full text-left text-white text-sm">
+                <thead>
+                  <tr class="text-[10px] text-slate-500 uppercase tracking-widest bg-white/5">
+                    <th class="px-8 py-5">Timestamp</th>
+                    <th class="px-6 py-5 text-center">Temperatura</th>
+                    <th class="px-6 py-5 text-center">Humedad Suelo</th>
+                    <th class="px-6 py-5 text-center">Precipitación</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-white/5">
+                  @for (reg of historialDatos(); track reg.id) {
+                  <tr class="hover:bg-blue-500/5 transition-colors group">
+                    <td class="px-8 py-4 text-slate-400 text-xs font-mono border-l-2 border-transparent group-hover:border-blue-500 transition-all">
+                      {{ parseDate(reg.fecha) | date:'dd/MM/yyyy HH:mm:ss' }}
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                      <span class="font-mono font-bold px-3 py-1 rounded-sm bg-black/30"
+                        [ngClass]="reg.temperatura > 35 ? 'text-red-400 border border-red-500/20' : reg.temperatura < 10 ? 'text-blue-400 border border-blue-500/20' : 'text-emerald-400 border border-emerald-500/20'">
+                        {{ reg.temperatura }}°C
+                      </span>
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                      <span class="font-mono font-bold px-3 py-1 rounded-sm bg-black/30"
+                        [ngClass]="reg.humedadSuelo < 30 ? 'text-red-400 border border-red-500/20' : reg.humedadSuelo > 80 ? 'text-blue-400 border border-blue-500/20' : 'text-emerald-400 border border-emerald-500/20'">
+                        {{ reg.humedadSuelo }}%
+                      </span>
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                      <span [ngClass]="reg.lluvia ? 'text-blue-400 bg-blue-500/10 border border-blue-500/20' : 'text-slate-600 bg-white/5'" class="text-[9px] font-black uppercase px-3 py-1 rounded-sm">
+                        {{ reg.lluvia ? 'Detectada' : 'Seco' }}
+                      </span>
+                    </td>
+                  </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        }
+
+        <!-- TAB: RIEGO -->
+        @if (pestanaHistorial() === 'riego') {
+          @if (historialRiego().length === 0) {
+            <div class="bg-slate-900/40 border border-white/10 rounded-sm p-20 text-center backdrop-blur-xl">
+              <p class="text-slate-500 text-sm font-bold uppercase tracking-widest">No hay registros de riego</p>
+            </div>
+          } @else {
+            <div class="bg-black/40 border border-white/10 rounded-sm overflow-hidden backdrop-blur-xl shadow-2xl animate-fade-in">
+              <table class="w-full text-left text-white text-sm">
+                <thead>
+                  <tr class="text-[10px] text-slate-500 uppercase tracking-widest bg-white/5">
+                    <th class="px-8 py-5">Fecha</th>
+                    <th class="px-6 py-5 text-center">Inicio</th>
+                    <th class="px-6 py-5 text-center">Fin</th>
+                    <th class="px-6 py-5 text-center">Duración</th>
+                    <th class="px-6 py-5 text-center">Estado</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-white/5">
+                  @for (r of historialRiego(); track r.id) {
+                  <tr class="hover:bg-emerald-500/5 transition-colors group">
+                    <td class="px-8 py-4 text-slate-400 text-xs font-mono border-l-2 border-transparent group-hover:border-emerald-500 transition-all">
+                      {{ parseDate(r.horaInicio) | date:'dd/MM/yyyy' }}
+                    </td>
+                    <td class="px-6 py-4 text-center text-xs font-mono text-slate-300">
+                      {{ parseDate(r.horaInicio) | date:'HH:mm:ss' }}
+                    </td>
+                    <td class="px-6 py-4 text-center text-xs font-mono text-slate-300">
+                      {{ r.horaFin ? (parseDate(r.horaFin) | date:'HH:mm:ss') : '--:--:--' }}
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                      <span class="font-mono font-bold px-3 py-1 rounded-sm bg-black/30 text-emerald-400 border border-emerald-500/20">
+                        {{ calcularMinutos(r.horaInicio, r.horaFin) }}
+                      </span>
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                      <span [ngClass]="r.horaFin ? 'text-slate-500 bg-white/5' : 'text-blue-400 bg-blue-500/10 border border-blue-500/20 animate-pulse'" class="text-[9px] font-black uppercase px-3 py-1 rounded-sm">
+                        {{ r.horaFin ? 'Completado' : '💧 Activo' }}
+                      </span>
+                    </td>
+                  </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        }
+      }
+    </div>
+    } @else {
 
     <!-- ------------------- PANEL ADMIN ------------------- -->
     @if (authService.userRole() === 'ADMIN') {
@@ -277,6 +453,10 @@
               <td class="px-6 py-4 text-slate-500 text-[10px] font-bold uppercase">{{ zona.nombreUsuario ?? 'SIN
                 ASIGNAR' }}</td>
               <td class="px-6 py-4 text-center flex gap-2 justify-center">
+                <button (click)="verHistorial(zona)"
+                  class="text-blue-400 hover:bg-blue-500 hover:text-white px-3 py-1 rounded border border-blue-500/30 text-[10px] font-bold uppercase transition-all">
+                  Registros
+                </button>
                 <button (click)="editarZona(zona)"
                   class="text-emerald-400 hover:bg-emerald-500 hover:text-white px-3 py-1 rounded border border-emerald-500/30 text-[10px] font-bold uppercase transition-all">
                   Editar
@@ -435,103 +615,58 @@
       }
       <div class="grid grid-cols-1 gap-3">
         @for (alerta of alertasPendientes(); track alerta.id) {
-        <div class="p-4 flex justify-between items-center backdrop-blur-xl border transition-all"
-          [ngClass]="alerta.estado === 'PENDIENTE' ? 'bg-red-950/20 border-red-500/30' : 'bg-emerald-950/10 border-emerald-500/10 opacity-60'">
-          <div>
-            <div class="flex items-center gap-2 mb-1">
-              <p class="text-[10px] font-bold uppercase"
-                [ngClass]="alerta.estado === 'PENDIENTE' ? 'text-red-400' : 'text-emerald-400'">{{ alerta.tipo }}</p>
-              <span class="text-[8px] px-2 py-0.5 rounded-full text-black font-bold uppercase"
-                [ngClass]="alerta.estado === 'PENDIENTE' ? 'bg-red-500' : 'bg-emerald-500'">{{ alerta.estado }}</span>
+        <div class="p-5 flex justify-between items-center backdrop-blur-xl border transition-all hover:bg-white/5"
+          [ngClass]="alerta.estado === 'PENDIENTE' ? 'bg-red-950/20 border-red-500/30' : 'bg-emerald-950/10 border-emerald-500/10 opacity-70'">
+          <div class="flex-1">
+            <div class="flex items-center gap-3 mb-2">
+              <span class="text-[10px] font-black uppercase tracking-tighter px-2 py-0.5 rounded"
+                [ngClass]="alerta.estado === 'PENDIENTE' ? 'bg-red-500 text-white' : 'bg-emerald-500 text-black'">
+                {{ alerta.estado }}
+              </span>
+              <p class="text-[10px] font-bold uppercase tracking-widest"
+                [ngClass]="alerta.estado === 'PENDIENTE' ? 'text-red-400' : 'text-emerald-400'">
+                {{ alerta.tipo }}
+              </p>
             </div>
-            <p class="text-sm text-slate-300">{{ alerta.descripcion }} en <b>{{ alerta.nombreZona }}</b></p>
-            <p class="text-[10px] mt-1 text-slate-500 font-bold uppercase">Responsable: <span class="text-slate-300">{{
-                alerta.nombreUsuario ?? 'Sistema' }}</span></p>
+            
+            <h4 class="text-sm text-white font-medium mb-1">
+              {{ alerta.descripcion }} en <span class="text-emerald-400 font-bold">{{ alerta.nombreZona }}</span>
+            </h4>
+            
+            <div class="flex items-center gap-4">
+              <p class="text-[10px] text-slate-500 font-bold uppercase">
+                Responsable: <span class="text-slate-300">{{ alerta.nombreUsuario ?? 'Sistema' }}</span>
+              </p>
+              @if (alerta.fecha) {
+              <p class="text-[10px] text-slate-500 font-bold uppercase border-l border-white/10 pl-4">
+                Registrado: <span class="text-slate-300">{{ parseDate(alerta.fecha) | date:'dd/MM/yyyy HH:mm' }}</span>
+              </p>
+              }
+            </div>
           </div>
-          @if (alerta.estado === 'PENDIENTE') {
-          <button (click)="resolverAlerta(alerta.id)"
-            class="text-[9px] border border-red-500/40 text-red-500 hover:bg-red-600 hover:text-white px-6 py-2 uppercase font-bold transition-all">
-            Resolver
-          </button>
-          } @else {
-          <span class="text-emerald-500 text-xl p-2">?</span>
-          }
+
+          <div class="ml-4">
+            @if (alerta.estado === 'PENDIENTE') {
+            <button (click)="resolverAlerta(alerta.id)"
+              class="text-[10px] border border-red-500/40 text-red-500 hover:bg-red-600 hover:text-white px-6 py-2.5 uppercase font-black transition-all shadow-lg hover:shadow-red-500/20">
+              Resolver Incidencia
+            </button>
+            } @else {
+            <div class="flex items-center gap-2 text-emerald-500">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+              </svg>
+              <span class="text-[10px] font-bold uppercase">Resuelta</span>
+            </div>
+            }
+          </div>
         </div>
         }
       </div>
     </div>
     }
-    }
-
-    <!-- ------------------- PANEL USUARIO ------------------- -->
-    @else if (authService.userRole() === 'USUARIO') {
-
-    <!-- Vista: Historial de datos de zona -->
-    @if (vistaUsuario() === 'historial' && zonaSeleccionada()) {
-    <div class="animate-fade-in">
-      <div class="flex items-center gap-4 mb-8">
-        <button (click)="volverAlDashboard()"
-          class="text-[10px] bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white px-4 py-2 border border-white/10 uppercase font-bold tracking-widest transition-all">
-          Volver
-        </button>
-        <div>
-          <h2 class="text-2xl font-light text-white">Historial <span class="font-bold text-emerald-500">{{
-              zonaSeleccionada().varCultivo }}</span></h2>
-          <p class="text-[10px] text-slate-500 uppercase tracking-widest">{{ zonaSeleccionada().ubicacion }}</p>
-        </div>
-      </div>
-
-      @if (cargandoHistorial()) {
-      <div class="flex items-center justify-center py-20">
-        <div class="text-emerald-500 text-sm font-bold uppercase tracking-widest animate-pulse">Cargando registros...
-        </div>
-      </div>
-      } @else if (historialDatos().length === 0) {
-      <div class="bg-slate-900/40 border border-white/10 rounded-sm p-12 text-center">
-        <p class="text-slate-500 text-sm">No hay registros históricos para esta zona.</p>
-      </div>
-      } @else {
-      <div class="bg-black/40 border border-white/10 rounded-sm overflow-hidden backdrop-blur-xl">
-        <table class="w-full text-left text-white text-sm">
-          <thead>
-            <tr class="text-[10px] text-slate-400 uppercase tracking-widest bg-white/5">
-              <th class="px-6 py-4">Fecha / Hora</th>
-              <th class="px-6 py-4 text-center">Temp. (C)</th>
-              <th class="px-6 py-4 text-center">Hum. Suelo</th>
-              <th class="px-6 py-4 text-center">Lluvia</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-white/5">
-            @for (reg of historialDatos(); track reg.id) {
-            <tr class="hover:bg-white/5 transition-colors">
-              <td class="px-6 py-3 text-slate-400 text-xs font-mono">{{ parseDate(reg.fecha) | date:'dd/MM/yyyy HH:mm'
-                }}</td>
-              <td class="px-6 py-3 text-center">
-                <span class="font-mono font-bold"
-                  [ngClass]="reg.temperatura > 35 ? 'text-red-400' : reg.temperatura < 10 ? 'text-blue-400' : 'text-emerald-400'">
-                  {{ reg.temperatura }}°C
-                </span>
-              </td>
-              <td class="px-6 py-3 text-center">
-                <span class="font-mono font-bold"
-                  [ngClass]="reg.humedadSuelo < 30 ? 'text-red-400' : reg.humedadSuelo > 80 ? 'text-blue-400' : 'text-emerald-400'">
-                  {{ reg.humedadSuelo }}%
-                </span>
-              </td>
-              <td class="px-6 py-3 text-center">
-                <span [ngClass]="reg.lluvia ? 'text-blue-400' : 'text-slate-600'" class="text-xs font-bold uppercase">
-                  {{ reg.lluvia ? 'Si' : 'No' }}
-                </span>
-              </td>
-            </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-      }
-    </div>
-    }
-
+    } @else if (authService.userRole() === 'USUARIO') {
+    
     <!-- Vista: Dashboard principal usuario -->
     @if (vistaUsuario() === 'dashboard') {
     <!-- Alertas pendientes -->
@@ -543,23 +678,38 @@
         @for (alerta of alertasPendientes(); track alerta.id) {
         <div class="p-4 flex justify-between items-center backdrop-blur-xl border transition-all"
           [ngClass]="alerta.estado === 'PENDIENTE' ? 'bg-red-950/20 border-red-500/50' : 'bg-emerald-950/10 border-emerald-500/20 opacity-60'">
-          <div>
-            <div class="flex items-center gap-2 mb-1">
-              <p class="text-[10px] font-bold uppercase"
-                [ngClass]="alerta.estado === 'PENDIENTE' ? 'text-red-400' : 'text-emerald-400'">{{ alerta.tipo }}</p>
-              <span class="text-[8px] px-2 py-0.5 rounded-full text-black font-bold"
-                [ngClass]="alerta.estado === 'PENDIENTE' ? 'bg-red-500' : 'bg-emerald-500'">{{ alerta.estado }}</span>
+          <div class="flex-1">
+            <div class="flex items-center gap-3 mb-2">
+              <span class="text-[9px] font-black uppercase tracking-tighter px-2 py-0.5 rounded"
+                [ngClass]="alerta.estado === 'PENDIENTE' ? 'bg-red-500 text-white' : 'bg-emerald-500 text-black'">
+                {{ alerta.estado }}
+              </span>
+              <p class="text-[10px] font-bold uppercase tracking-widest"
+                [ngClass]="alerta.estado === 'PENDIENTE' ? 'text-red-400' : 'text-emerald-400'">
+                {{ alerta.tipo }}
+              </p>
             </div>
-            <p class="text-sm text-slate-300">{{ alerta.descripcion }} en <b>{{ alerta.nombreZona }}</b></p>
+            <p class="text-sm text-white">{{ alerta.descripcion }} en <b class="text-emerald-400">{{ alerta.nombreZona }}</b></p>
+            @if (alerta.fecha) {
+              <p class="text-[9px] text-slate-500 font-bold uppercase mt-1">
+                Fecha: <span class="text-slate-300">{{ parseDate(alerta.fecha) | date:'dd/MM HH:mm' }}</span>
+              </p>
+            }
           </div>
-          @if (alerta.estado === 'PENDIENTE') {
-          <button (click)="resolverAlerta(alerta.id)"
-            class="text-[9px] border border-red-500/40 text-red-500 hover:bg-red-600 hover:text-white px-4 py-2 uppercase font-bold transition-all">
-            Resolver
-          </button>
-          } @else {
-          <span class="text-emerald-500 text-xl">?</span>
-          }
+          <div class="ml-4">
+            @if (alerta.estado === 'PENDIENTE') {
+            <button (click)="resolverAlerta(alerta.id)"
+              class="text-[9px] border border-red-500/40 text-red-500 hover:bg-red-600 hover:text-white px-4 py-2 uppercase font-black transition-all">
+              Resolver
+            </button>
+            } @else {
+            <div class="text-emerald-500">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+              </svg>
+            </div>
+            }
+          </div>
         </div>
         }
       </div>
@@ -611,22 +761,60 @@
             <p class="text-white font-mono font-bold">{{ zona.ultimaTemperatura ?? "--" }}°C</p>
           </div>
         </div>
+
+        <!-- Estado del Riego (Premium) -->
+        <div class="mb-6">
+          <div class="flex items-center justify-between mb-2 px-1">
+            <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Suministro Hídrico</p>
+            @if (tieneRiegoActivo(zona.id)) {
+              <div class="flex items-center gap-2 bg-blue-500/10 px-3 py-1 border border-blue-500/20 rounded-full">
+                <span class="relative flex h-2 w-2">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                </span>
+                <span class="text-[9px] text-blue-400 font-black uppercase tracking-widest">Activo</span>
+              </div>
+            } @else {
+              <div class="flex items-center gap-2 bg-slate-800/50 px-3 py-1 border border-white/5 rounded-full">
+                <span class="h-2 w-2 rounded-full bg-slate-600"></span>
+                <span class="text-[9px] text-slate-600 font-black uppercase tracking-widest">Inactivo</span>
+              </div>
+            }
+          </div>
+          
+          @if (tieneRiegoActivo(zona.id)) {
+            <div class="bg-blue-600/10 border border-blue-500/20 p-3 rounded-sm animate-fade-in mb-2">
+              <p class="text-[10px] text-blue-100 font-medium leading-tight">
+                <span class="font-black text-blue-400 uppercase mr-1">Riego Iniciado:</span> 
+                El sistema está suministrando agua según los parámetros configurados.
+              </p>
+            </div>
+          } @else {
+            <div class="bg-white/5 border border-white/5 p-3 rounded-sm mb-2">
+              <p class="text-[10px] text-slate-500 font-medium italic leading-tight">
+                <span class="font-black text-slate-600 uppercase mr-1">Riego Detenido:</span> 
+                El suelo mantiene niveles de humedad dentro del rango óptimo.
+              </p>
+            </div>
+          }
+        </div>
+
         <!-- Controles de riego -->
         <div class="grid grid-cols-2 gap-3 mb-4 mt-auto">
           <button (click)="encenderRiego(zona.id)" [disabled]="tieneRiegoActivo(zona.id)"
-            class="py-2 border text-[9px] font-bold uppercase tracking-widest rounded-sm transition-all"
-            [ngClass]="tieneRiegoActivo(zona.id) ? 'bg-blue-600/30 border-blue-500/50 text-blue-300 cursor-not-allowed' : 'bg-blue-600/20 hover:bg-blue-600 text-blue-400 hover:text-white border-blue-500/30'">
-            Iniciar Riego
+            class="py-2.5 border text-[9px] font-black uppercase tracking-widest rounded-sm transition-all shadow-lg"
+            [ngClass]="tieneRiegoActivo(zona.id) ? 'bg-blue-600/30 border-blue-500/50 text-blue-300 cursor-not-allowed' : 'bg-blue-600/20 hover:bg-blue-600 text-blue-400 hover:text-white border-blue-500/30 hover:shadow-blue-500/20'">
+            Iniciar Manual
           </button>
           <button (click)="apagarRiego(zona.id)" [disabled]="!tieneRiegoActivo(zona.id)"
-            class="py-2 border text-[9px] font-bold uppercase tracking-widest rounded-sm transition-all"
-            [ngClass]="!tieneRiegoActivo(zona.id) ? 'bg-slate-800 border-white/5 text-slate-600 cursor-not-allowed' : 'bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white border-red-500/30'">
+            class="py-2.5 border text-[9px] font-black uppercase tracking-widest rounded-sm transition-all shadow-lg"
+            [ngClass]="!tieneRiegoActivo(zona.id) ? 'bg-slate-800 border-white/5 text-slate-600 cursor-not-allowed' : 'bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white border-red-500/30 hover:shadow-red-500/20'">
             Detener
           </button>
         </div>
         <!-- Historial -->
         <button (click)="verHistorial(zona)"
-          class="w-full py-2 border border-emerald-500/20 text-emerald-500 hover:bg-emerald-500 hover:text-white text-[9px] font-bold uppercase tracking-widest rounded-sm transition-all">
+          class="w-full py-2.5 border border-emerald-500/20 text-emerald-500 hover:bg-emerald-500 hover:text-white text-[9px] font-black uppercase tracking-widest rounded-sm transition-all shadow-lg hover:shadow-emerald-500/20">
           Ver Historial de Datos
         </button>
         <!-- Último registro -->
@@ -638,6 +826,7 @@
       </div>
       }
     </div>
+    }
     }
     }
 

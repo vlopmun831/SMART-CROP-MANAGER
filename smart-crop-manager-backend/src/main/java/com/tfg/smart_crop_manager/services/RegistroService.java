@@ -92,7 +92,6 @@ public class RegistroService {
 			nuevoRegistro.setFecha(LocalDateTime.now(ZoneId.of("Europe/Madrid")));
 			nuevoRegistro.setTemperatura(payload.getTemperatura());
 			nuevoRegistro.setHumedadSuelo(payload.getHumedadSuelo());
-			nuevoRegistro.setHumedadAire(payload.getHumedadAire());
 			nuevoRegistro.setLluvia(payload.isLluvia());
 			nuevoRegistro.setZonaCultivo(zona);
 
@@ -138,6 +137,8 @@ public class RegistroService {
             try {
                 // Llamamos al método que creamos antes para apagar el riego de esta parcela
                 riegoService.finalizarRiegoActivoPorZona(zona.getId());
+                alertaService.resolverAlertaPorZonaYTipo(zona.getId().intValue(), TipoAlerta.SUELO_SECO);
+                
                 System.out.println("🛑 Riego Automático DETENIDO: Humedad óptima o lluvia en " + zona.getUbicacion());
             } catch (Exception e) {
                 // Silencioso: Entrará aquí la mayoría de las veces porque el riego ya estará apagado,

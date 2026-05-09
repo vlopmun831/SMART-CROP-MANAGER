@@ -21,7 +21,7 @@ export class AuthService {
 
   public isAuthenticated = signal<boolean>(!!localStorage.getItem('token'));
   public userRole = signal<string | null>(localStorage.getItem('userRole'));
-  public userName = signal<string | null>(localStorage.getItem('username'));
+  public userName = signal<string | null>(localStorage.getItem('userName'));
   public userId = signal<number | null>(Number(localStorage.getItem('userId')) || null)
 
   login(credentials: { email: string, password: string }) {

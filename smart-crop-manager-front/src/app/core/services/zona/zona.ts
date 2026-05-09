@@ -48,6 +48,11 @@ export class ZonaService {
     return this.http.put<any>(`http://localhost:8099/riego/${idRiego}/finalizar`, {});
   }
 
+  // GET /riego/zona/{idZona}/historial → historial de sesiones de riego
+  getHistorialRiego(idZona: number): Observable<any[]> {
+    return this.http.get<any[]>(`http://localhost:8099/riego/zona/${idZona}/historial`);
+  }
+
   // --- HISTÓRICO DE DATOS DE SENSORES ---
 
   // GET /registros/zona/{zonaId}  → historial completo

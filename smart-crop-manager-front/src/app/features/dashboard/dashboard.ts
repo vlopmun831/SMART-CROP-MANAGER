@@ -28,6 +28,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
   public usuarios = signal<any[]>([]);
   public alertasPendientes = signal<any[]>([]);
   public weather = signal<any>(null);
+  
+  // ── Filtros Temporales ─────────────────────────────────────────────────────
+  public fechaDesde = signal<string>('');
+  public fechaHasta = signal<string>('');
 
   // ── KPIs (admin) ──────────────────────────────────────────────────────────
   public totalZonas = signal<number>(0);
@@ -420,7 +424,51 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  // ── Historial de datos de sensores (USUARIO) ──────────────────────────────
+  // ── Lógica de Filtrado Temporal ───────────────────────────────────────────
+  get historialDatosFiltrados() {
+    return this.filtrarPorFecha(this.historialDatos(), 'fecha');
+  }
+
+  get historialRiegoFiltrado() {
+    return this.filtrarPorFecha(this.historialRiego(), 'horaInicio');
+  }
+
+  get alertasFiltradas() {
+    return this.filtrarPorFecha(this.alertasPendientes(), 'fecha');
+  }
+
+  private filtrarPorFecha(lista: any[], campoFecha: string): any[] {
+    const desde = this.fechaDesde();
+    const hasta = this.fechaHasta();
+
+    if (!desde && !hasta) return lista;
+
+    return lista.filter(item => {
+      const fechaItem = this.parseDate(item[campoFecha]);
+      if (!fechaItem) return true;
+
+      // Resetear horas para comparar solo días si se desea, 
+      // pero aquí compararemos el timestamp completo para ser precisos.
+      const timeItem = fechaItem.getTime();
+      
+      if (desde) {
+        const timeDesde = new Date(desde).getTime();
+        if (timeItem < timeDesde) return false;
+      }
+      
+      if (hasta) {
+        const timeHasta = new Date(hasta).setHours(23, 59, 59, 999);
+        if (timeItem > timeHasta) return false;
+      }
+
+      return true;
+    });
+  }
+
+  limpiarFiltros() {
+    this.fechaDesde.set('');
+    this.fechaHasta.set('');
+  }
   verHistorial(zona: any) {
     this.zonaSeleccionada.set(zona);
     this.vistaUsuario.set('historial');

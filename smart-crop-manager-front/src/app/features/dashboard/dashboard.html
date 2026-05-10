@@ -85,6 +85,30 @@
         </div>
       </div>
 
+      <!-- Filtros Temporales (Premium) -->
+      <div class="flex flex-wrap items-end gap-4 mb-6 bg-white/5 p-4 rounded-sm border border-white/10 backdrop-blur-md animate-fade-in">
+        <div class="flex flex-col gap-1">
+          <label class="text-[9px] text-slate-500 uppercase font-bold tracking-widest ml-1">Desde</label>
+          <input type="date" [(ngModel)]="fechaDesde"
+            class="bg-slate-900 border border-white/10 p-2 text-xs text-white outline-none focus:border-blue-500 transition-all rounded-sm">
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="text-[9px] text-slate-500 uppercase font-bold tracking-widest ml-1">Hasta</label>
+          <input type="date" [(ngModel)]="fechaHasta"
+            class="bg-slate-900 border border-white/10 p-2 text-xs text-white outline-none focus:border-blue-500 transition-all rounded-sm">
+        </div>
+        <button (click)="limpiarFiltros()"
+          class="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 text-slate-400 hover:text-white text-[9px] font-bold uppercase tracking-widest transition-all rounded-sm">
+          Limpiar
+        </button>
+        <div class="ml-auto text-right hidden md:block">
+          <p class="text-[8px] text-slate-500 uppercase font-black tracking-[0.2em]">Resultados Filtrados</p>
+          <p class="text-xs font-mono font-bold text-blue-400">
+            {{ pestanaHistorial() === 'sensores' ? historialDatosFiltrados.length : historialRiegoFiltrado.length }} registros
+          </p>
+        </div>
+      </div>
+
       <!-- Tabs de Historial -->
       <div class="flex gap-4 mb-6 border-b border-white/10">
         <button (click)="pestanaHistorial.set('sensores')"
@@ -125,7 +149,7 @@
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-white/5">
-                  @for (reg of historialDatos(); track reg.id) {
+                  @for (reg of historialDatosFiltrados; track reg.id) {
                   <tr class="hover:bg-blue-500/5 transition-colors group">
                     <td class="px-8 py-4 text-slate-400 text-xs font-mono border-l-2 border-transparent group-hover:border-blue-500 transition-all">
                       {{ parseDate(reg.fecha) | date:'dd/MM/yyyy HH:mm:ss' }}
@@ -174,7 +198,7 @@
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-white/5">
-                  @for (r of historialRiego(); track r.id) {
+                  @for (r of historialRiegoFiltrado; track r.id) {
                   <tr class="hover:bg-emerald-500/5 transition-colors group">
                     <td class="px-8 py-4 text-slate-400 text-xs font-mono border-l-2 border-transparent group-hover:border-emerald-500 transition-all">
                       {{ parseDate(r.horaInicio) | date:'dd/MM/yyyy' }}
@@ -596,15 +620,26 @@
     <!-- TAB: ALERTAS -->
     @if (pestanaAdmin() === 'alertas') {
     <div class="animate-fade-in">
-      @if (alertasPendientes().length === 0) {
-      <div class="bg-emerald-950/20 border border-emerald-500/20 rounded-sm p-12 text-center">
-        <p class="text-emerald-400 text-2xl mb-2">?</p>
-        <p class="text-emerald-400 font-bold uppercase tracking-widest text-sm">Sistema operando con normalidad</p>
-        <p class="text-slate-500 text-xs mt-1">No hay alertas activas en el sistema.</p>
+      <!-- Filtro de Alertas -->
+      <div class="flex flex-wrap items-end gap-4 mb-6 bg-white/5 p-4 rounded-sm border border-white/10 backdrop-blur-md">
+        <div class="flex flex-col gap-1">
+          <label class="text-[9px] text-slate-500 uppercase font-bold tracking-widest ml-1">Desde</label>
+          <input type="date" [(ngModel)]="fechaDesde"
+            class="bg-slate-900 border border-white/10 p-2 text-xs text-white outline-none focus:border-red-500 transition-all rounded-sm">
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="text-[9px] text-slate-500 uppercase font-bold tracking-widest ml-1">Hasta</label>
+          <input type="date" [(ngModel)]="fechaHasta"
+            class="bg-slate-900 border border-white/10 p-2 text-xs text-white outline-none focus:border-red-500 transition-all rounded-sm">
+        </div>
+        <button (click)="limpiarFiltros()"
+          class="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 text-slate-400 hover:text-white text-[9px] font-bold uppercase tracking-widest transition-all rounded-sm">
+          Limpiar
+        </button>
       </div>
-      }
+
       <div class="grid grid-cols-1 gap-3">
-        @for (alerta of alertasPendientes(); track alerta.id) {
+        @for (alerta of alertasFiltradas; track alerta.id) {
         <div class="p-5 flex justify-between items-center backdrop-blur-xl border transition-all hover:bg-white/5"
           [ngClass]="alerta.estado === 'PENDIENTE' ? 'bg-red-950/20 border-red-500/30' : 'bg-emerald-950/10 border-emerald-500/10 opacity-70'">
           <div class="flex-1">

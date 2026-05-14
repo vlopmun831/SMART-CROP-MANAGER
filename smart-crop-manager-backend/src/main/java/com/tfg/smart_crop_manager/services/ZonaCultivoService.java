@@ -76,7 +76,6 @@ public class ZonaCultivoService {
 		if (zonaCultivo.getUsuario() != null) {
 			zonaBD.setUsuario(zonaCultivo.getUsuario());
 		}
-		// 2. NUEVOS CAMPOS DE CONFIGURACIÓN (Admin Control)
 		// Permite que el Admin ajuste los umbrales personalizados
 		if (zonaCultivo.getHumSueloMinConfig() != null) {
 			zonaBD.setHumSueloMinConfig(zonaCultivo.getHumSueloMinConfig());

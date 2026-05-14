@@ -125,7 +125,7 @@ public class RegistroService {
 			}
 		}
 
-		// --- 3. LA MAGIA NUEVA: APAGADO AUTOMÁTICO ---
+		// --- 3. APAGADO AUTOMÁTICO ---
 
 		// ¿La tierra ya está bien mojada O ha empezado a llover? -> APAGAMOS
 		if (reg.getHumedadSuelo() >= maxHum || reg.isLluvia()) {
@@ -137,8 +137,8 @@ public class RegistroService {
 				System.out.println("🛑 Riego Automático DETENIDO: Humedad óptima o lluvia en " + zona.getUbicacion());
 			} catch (Exception e) {
 				// Silencioso: Entrará aquí la mayoría de las veces porque el riego ya estará
-				// apagado,
-				// así evitamos que salten errores en la consola.
+				// apagado
+				
 			}
 		}
 

@@ -1,4 +1,64 @@
-/* You can add global styles to this file, and also import other style files */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --font-main: 'Outfit', sans-serif;
+  --font-data: 'Inter', sans-serif;
+}
+
+body {
+  font-family: var(--font-main);
+  background-color: #020617; 
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(30, 58, 138, 0.2) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.1) 0px, transparent 50%);
+  background-attachment: fixed;
+  color: #f8fafc;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Tarjetas con Contraste Máximo */
+.backdrop-blur-md, .backdrop-blur-xl, .backdrop-blur-2xl {
+  background-color: rgba(15, 23, 42, 0.9) !important; /* Casi sólido para evitar distracciones */
+  backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+}
+
+/* Tipografía súper legible */
+body, p, span, div, label {
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* Truco para que la letra "salte" */
+}
+
+/* Forzamos que los textos secundarios no sean tan oscuros */
+.text-slate-400, .text-slate-500, .text-slate-600 {
+  color: #e2e8f0 !important; /* Un gris muy muy clarito, casi blanco */
+  font-weight: 500 !important; /* Más grosor */
+}
+
+/* Los datos numéricos deben ser grandes y claros */
+.text-2xl, .text-3xl, .font-bold {
+  color: #ffffff !important;
+  letter-spacing: -0.01em;
+}
+
+/* Tablas con más contraste */
+table th {
+  color: #94a3b8 !important;
+  font-weight: 700 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+table td {
+  color: #f1f5f9 !important;
+}
+
+/* Mejora de los inputs */
+input {
+  background-color: rgba(0, 0, 0, 0.2) !important;
+  color: white !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}

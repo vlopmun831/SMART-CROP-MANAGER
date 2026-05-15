@@ -50,6 +50,10 @@
             {{ alertasPendientes().length }} ALERTA(S)
           </span>
           }
+          <button (click)="abrirCambiarPassword()"
+            class="text-[10px] bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white px-4 py-2 rounded border border-white/10 transition-all font-bold uppercase tracking-widest">
+            Seguridad
+          </button>
           <button (click)="authService.logout()"
             class="text-[10px] bg-red-500/10 hover:bg-red-500/20 text-red-400 px-4 py-2 rounded border border-red-500/20 transition-all font-bold uppercase tracking-widest">
             Cerrar Sesión
@@ -229,6 +233,52 @@
       }
     </div>
     } @else {
+    
+    <!-- ------------------- FORMULARIO CAMBIO PASSWORD (GLOBAL) ------------------- -->
+    @if (verFormPassword()) {
+    <div class="animate-fade-in max-w-2xl mx-auto mb-10">
+      <section class="bg-black/60 border border-blue-500/30 p-8 backdrop-blur-xl rounded-sm shadow-2xl">
+        <div class="flex justify-between items-center mb-8">
+          <div>
+            <h2 class="text-xl font-light tracking-widest text-white uppercase">Gestión de <span class="text-blue-500 font-bold">Seguridad</span></h2>
+            <p class="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Actualiza tu contraseña de acceso</p>
+          </div>
+          <button (click)="verFormPassword.set(false)" class="text-slate-500 hover:text-white text-xs transition-colors">Cancelar</button>
+        </div>
+
+        <div class="space-y-6">
+          <div class="space-y-2">
+            <label class="text-[10px] text-blue-400 font-bold uppercase tracking-widest ml-1">Contraseña Actual</label>
+            <input type="password" [(ngModel)]="formPassword.oldPassword" placeholder="••••••••"
+              class="w-full bg-slate-900 border border-white/10 p-4 text-white outline-none focus:border-blue-500 transition-all">
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-2">
+              <label class="text-[10px] text-emerald-400 font-bold uppercase tracking-widest ml-1">Nueva Contraseña</label>
+              <input type="password" [(ngModel)]="formPassword.newPassword" placeholder="••••••••"
+                class="w-full bg-slate-900 border border-white/10 p-4 text-white outline-none focus:border-emerald-500 transition-all">
+            </div>
+            <div class="space-y-2">
+              <label class="text-[10px] text-emerald-400 font-bold uppercase tracking-widest ml-1">Confirmar Nueva</label>
+              <input type="password" [(ngModel)]="formPassword.confirmPassword" placeholder="••••••••"
+                [ngClass]="formPassword.confirmPassword !== '' && formPassword.newPassword !== formPassword.confirmPassword ? 'border-red-500' : 'border-white/10 focus:border-emerald-500'"
+                class="w-full bg-slate-900 border p-4 text-white outline-none transition-all">
+            </div>
+          </div>
+
+          @if (formPassword.confirmPassword !== '' && formPassword.newPassword !== formPassword.confirmPassword) {
+            <p class="text-[10px] text-red-500 font-bold italic ml-1 animate-pulse"> Las contraseñas nuevas no coinciden</p>
+          }
+
+          <button (click)="guardarNuevoPassword()"
+            class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold uppercase py-4 transition-all shadow-lg hover:shadow-blue-500/20 mt-4">
+            Actualizar Credenciales
+          </button>
+        </div>
+      </section>
+    </div>
+    }
 
     <!-- ------------------- PANEL ADMIN ------------------- -->
     @if (authService.userRole() === 'ADMIN') {
@@ -347,18 +397,18 @@
           <div class="space-y-4 bg-white/5 p-4 rounded-sm border border-white/5">
             <p class="text-[10px] text-emerald-400 font-bold uppercase tracking-widest">Umbrales de Alerta</p>
             <div>
-              <label class="text-[9px] text-slate-400 block mb-1">Humedad Suelo Mínima (%)</label>
-              <input type="number" [(ngModel)]="nuevaZona.humSueloMinConfig"
+              <label class="text-[9px] text-slate-400 block mb-1">Humedad Suelo Mínima (%) <span class="text-red-500">*</span></label>
+              <input type="number" [(ngModel)]="nuevaZona.humSueloMinConfig" required
                 class="w-full bg-black/20 border border-white/10 p-3 text-white focus:border-emerald-500">
             </div>
             <div>
-              <label class="text-[9px] text-slate-400 block mb-1">Humedad Suelo Máxima (%)</label>
-              <input type="number" [(ngModel)]="nuevaZona.humSueloMaxConfig"
+              <label class="text-[9px] text-slate-400 block mb-1">Humedad Suelo Máxima (%) <span class="text-red-500">*</span></label>
+              <input type="number" [(ngModel)]="nuevaZona.humSueloMaxConfig" required
                 class="w-full bg-black/20 border border-white/10 p-3 text-white focus:border-emerald-500">
             </div>
             <div>
-              <label class="text-[9px] text-slate-400 block mb-1">Temperatura Crítica (ºC)</label>
-              <input type="number" [(ngModel)]="nuevaZona.tempMaxConfig"
+              <label class="text-[9px] text-slate-400 block mb-1">Temperatura Crítica (ºC) <span class="text-red-500">*</span></label>
+              <input type="number" [(ngModel)]="nuevaZona.tempMaxConfig" required
                 class="w-full bg-black/20 border border-white/10 p-3 text-white focus:border-orange-500">
             </div>
           </div>
@@ -423,18 +473,18 @@
           <div class="space-y-4 bg-white/5 p-4 rounded-sm border border-white/5">
             <p class="text-[10px] text-emerald-400 font-bold uppercase tracking-widest">Umbrales de Alerta</p>
             <div>
-              <label class="text-[9px] text-slate-400 block mb-1">Humedad Suelo Mínima (%)</label>
-              <input type="number" [(ngModel)]="zonaEditando.humSueloMinConfig"
+              <label class="text-[9px] text-slate-400 block mb-1">Humedad Suelo Mínima (%) <span class="text-red-500">*</span></label>
+              <input type="number" [(ngModel)]="zonaEditando.humSueloMinConfig" required
                 class="w-full bg-black/20 border border-white/10 p-3 text-white focus:border-emerald-500">
             </div>
             <div>
-              <label class="text-[9px] text-slate-400 block mb-1">Humedad Suelo Máxima (%)</label>
-              <input type="number" [(ngModel)]="zonaEditando.humSueloMaxConfig"
+              <label class="text-[9px] text-slate-400 block mb-1">Humedad Suelo Máxima (%) <span class="text-red-500">*</span></label>
+              <input type="number" [(ngModel)]="zonaEditando.humSueloMaxConfig" required
                 class="w-full bg-black/20 border border-white/10 p-3 text-white focus:border-emerald-500">
             </div>
             <div>
-              <label class="text-[9px] text-slate-400 block mb-1">Temperatura Crítica (ºC)</label>
-              <input type="number" [(ngModel)]="zonaEditando.tempMaxConfig"
+              <label class="text-[9px] text-slate-400 block mb-1">Temperatura Crítica (ºC) <span class="text-red-500">*</span></label>
+              <input type="number" [(ngModel)]="zonaEditando.tempMaxConfig" required
                 class="w-full bg-black/20 border border-white/10 p-3 text-white focus:border-orange-500">
             </div>
           </div>

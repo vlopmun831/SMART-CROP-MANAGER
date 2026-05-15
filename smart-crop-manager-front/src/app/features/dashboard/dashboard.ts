@@ -44,6 +44,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   public verFormUsuario = signal<boolean>(false);
   public verFormZona = signal<boolean>(false);
   public verFormEditarZona = signal<boolean>(false);
+  public verFormPassword = signal<boolean>(false);
 
   // ── Vista activa usuario ──────────────────────────────────────────────────
   // 'dashboard' | 'historial'
@@ -109,6 +110,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
     email: '',
     password: '',
     rol: 'USUARIO'
+  };
+
+  public formPassword = {
+    oldPassword: '',
+    newPassword: '',
+    confirmPassword: ''
   };
 
   // ── Pestaña activa ADMIN ──────────────────────────────────────────────────
@@ -284,9 +291,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
   guardarNuevaZona() {
     // Validación de campos obligatorios
     if (!this.nuevaZona.varCultivo || !this.nuevaZona.ubicacion || 
-        this.nuevaZona.humSueloMinConfig === null || this.nuevaZona.humSueloMaxConfig === null || 
-        this.nuevaZona.tempMaxConfig === null || !this.nuevaZona.usuario.id) {
-      Swal.fire('Campos incompletos', 'Por favor, rellena todos los datos de la parcela y asigna un operario.', 'warning');
+        this.esVacio(this.nuevaZona.humSueloMinConfig) || 
+        this.esVacio(this.nuevaZona.humSueloMaxConfig) || 
+        this.esVacio(this.nuevaZona.tempMaxConfig) || 
+        !this.nuevaZona.usuario.id) {
+      Swal.fire('Campos incompletos', 'Por favor, rellena todos los datos de la parcela (incluyendo umbrales) y asigna un operario.', 'warning');
       return;
     }
 
@@ -317,8 +326,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   guardarEdicionZona() {
     if (!this.zonaEditando.varCultivo || !this.zonaEditando.ubicacion || 
-        this.zonaEditando.humSueloMinConfig === null || this.zonaEditando.humSueloMaxConfig === null || 
-        this.zonaEditando.tempMaxConfig === null) {
+        this.esVacio(this.zonaEditando.humSueloMinConfig) || 
+        this.esVacio(this.zonaEditando.humSueloMaxConfig) || 
+        this.esVacio(this.zonaEditando.tempMaxConfig)) {
       Swal.fire('Campos incompletos', 'Todos los umbrales y datos son obligatorios.', 'warning');
       return;
     }
@@ -620,5 +630,70 @@ export class DashboardComponent implements OnInit, OnDestroy {
       }
     }
     return isNaN(result.getTime()) ? null : result;
+  }
+
+  esVacio(val: any): boolean {
+    return val === null || val === undefined || val === '';
+  }
+
+  // ── Cambio de Password (Todos los roles) ──────────────────────────────────
+  abrirCambiarPassword() {
+    this.verFormPassword.set(true);
+    // Ocultamos otros formularios si estuvieran abiertos
+    this.verFormZona.set(false);
+    this.verFormEditarZona.set(false);
+    this.verFormUsuario.set(false);
+    this.verFormEditarUsuario.set(false);
+    this.vistaUsuario.set('dashboard'); // Si estaba en historial, volvemos
+    this.formPassword = { oldPassword: '', newPassword: '', confirmPassword: '' };
+  }
+
+  guardarNuevoPassword() {
+    if (this.esVacio(this.formPassword.oldPassword) || 
+        this.esVacio(this.formPassword.newPassword) || 
+        this.esVacio(this.formPassword.confirmPassword)) {
+      Swal.fire({ title: 'Campos incompletos', text: 'Por favor, rellena todos los campos.', icon: 'warning', background: '#0f172a', color: '#ffffff' });
+      return;
+    }
+
+    if (this.formPassword.newPassword !== this.formPassword.confirmPassword) {
+      Swal.fire({ title: 'Error', text: 'La nueva contraseña y su confirmación no coinciden.', icon: 'error', background: '#0f172a', color: '#ffffff' });
+      return;
+    }
+
+    const userId = this.authService.userId();
+    if (!userId) return;
+
+    // Llamamos al servicio para cambiar la contraseña
+    // Usamos el payload que espera el backend (dependiendo de la implementación, 
+    // aquí enviamos old y new para que el back valide)
+    const payload = {
+      oldPassword: this.formPassword.oldPassword,
+      newPassword: this.formPassword.newPassword
+    };
+
+    this.usuarioService.cambiarPassword(userId, payload).subscribe({
+      next: () => {
+        Swal.fire({ 
+          title: '¡Contraseña actualizada!', 
+          text: 'Tu contraseña ha sido cambiada correctamente.', 
+          icon: 'success', 
+          timer: 2000, 
+          showConfirmButton: false,
+          background: '#0f172a', 
+          color: '#ffffff' 
+        });
+        this.verFormPassword.set(false);
+      },
+      error: (err) => {
+        Swal.fire({ 
+          title: 'Error', 
+          text: err.error?.message || 'No se pudo cambiar la contraseña. Verifica tu contraseña actual.', 
+          icon: 'error',
+          background: '#0f172a', 
+          color: '#ffffff' 
+        });
+      }
+    });
   }
 }

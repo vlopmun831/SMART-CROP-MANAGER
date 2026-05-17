@@ -1,44 +1,66 @@
-INSERT INTO usuario (nombre, email, password, rol) VALUES 
-('Juan Agricultor', 'juan@campo.com', '$2a$10$vI8p7MslZpAgH.n.5K0Yre8LhPz8G90NTo09q43A.N.M4W91.N.mS', 'USUARIO'),
-('Maria Hortelana', 'maria@huerta.com', '$2a$10$vI8p7MslZpAgH.n.5K0Yre8LhPz8G90NTo09q43A.N.M4W91.N.mS', 'USUARIO');
+-- =========================
+-- SCRIPT DE INICIALIZACIÓN 
+-- ==========================
+SET FOREIGN_KEY_CHECKS = 0;
+TRUNCATE TABLE alerta;
+TRUNCATE TABLE riego;
+TRUNCATE TABLE registro;
+TRUNCATE TABLE zona_cultivo;
+TRUNCATE TABLE usuario;
+SET FOREIGN_KEY_CHECKS = 1;
 
--- 2. ZONAS DE CULTIVO
--- Repartimos: Zona 1 para el Admin (id 1), Zonas 2 y 3 para Juan (id 2), Zona 4 para Maria (id 3)
-INSERT INTO zona_cultivo (var_cultivo, ubicacion, hum_suelo_min_config, hum_suelo_max_config, temp_max_config, id_usuario) VALUES 
-('VARIEDAD_1', 'Invernadero Principal', 30.0, 80.0, 35.0, 1),
-('VARIEDAD_2', 'Sector Olivos Sur', 15.0, 90.0, 45.0, 2),
-('VARIEDAD_3', 'Huerta Tomates', 50.0, 95.0, 28.0, 2),
-('VARIEDAD_1', 'Parcela Exterior', 30.0, 80.0, 35.0, 3);
+-- 1. INSERTAR USUARIOS (Contraseña de todos encriptada con BCrypt: 'admin1234' y '1234')
+INSERT INTO usuario (id, nombre, email, password, rol) VALUES
+(1, 'Vanessa Directora', 'admin@smartcrop.com', '$2a$10$epMlyz1Y5tI0V1G5SXZ5H.5vEaQhM/T1O6J9Q2Nq6rL4W2W5Q1k2e', 'ADMIN'),
+(2, 'Carlos Agrónomo', 'carlos@smartcrop.com', '$2a$10$epMlyz1Y5tI0V1G5SXZ5H.5vEaQhM/T1O6J9Q2Nq6rL4W2W5Q1k2e', 'USUARIO'),
+(3, 'Laura Operaria', 'laura@smartcrop.com', '$2a$10$epMlyz1Y5tI0V1G5SXZ5H.5vEaQhM/T1O6J9Q2Nq6rL4W2W5Q1k2e', 'USUARIO'),
+(4, 'Pedro Viticultor', 'pedro@smartcrop.com', '$2a$10$epMlyz1Y5tI0V1G5SXZ5H.5vEaQhM/T1O6J9Q2Nq6rL4W2W5Q1k2e', 'USUARIO');
 
--- 3. REGISTROS (Historial de sensores)
--- Metemos un par de lecturas para la zona del admin y las de los usuarios
-INSERT INTO registro (fecha, temperatura, humedad_suelo, humedad_aire, lluvia, id_zona) VALUES 
-(NOW(), 24.5, 45.0, 60.0, 0, 1),
-(DATE_SUB(NOW(), INTERVAL 2 HOUR), 22.1, 48.2, 65.0, 0, 1),
-(NOW(), 18.0, 70.0, 80.0, 1, 2),
-(NOW(), 30.5, 25.0, 40.0, 0, 3);
-(NOW(), 26.2, 38.5, 55.0, 0, 4);
 
--- 4. RIEGOS
--- Un riego finalizado y uno activo (sin hora_fin)
-INSERT INTO riego (fecha, hora_inicio, hora_fin, id_zona) VALUES 
-(CURDATE(), DATE_SUB(NOW(), INTERVAL 3 HOUR), DATE_SUB(NOW(), INTERVAL 2 HOUR), 1),
-(CURDATE(), NOW(), NULL, 3);
+-- 2. INSERTAR ZONAS DE CULTIVO
+INSERT INTO zona_cultivo (id, var_cultivo, ubicacion, hum_suelo_min_config, hum_suelo_max_config, temp_max_config, id_usuario) VALUES
+(1, 'TOMATE', 'Invernadero A - Sector Norte', 45.0, 85.0, 32.0, 2),
+(2, 'OLIVO', 'Finca Olivar Sur', NULL, NULL, NULL, 3), 
+(3, 'VID', 'Parcela Ladera Oeste', 35.0, 75.0, 38.0, 4),
+(4, 'ALMENDRO', 'Sector Secano Este', 25.0, 70.0, 40.0, 2);
 
--- 5. ALERTAS
--- Diferentes estados y tipos basados en tus Enums
-INSERT INTO alerta (tipo_alerta, descripcion, max, min, estado, fecha, id_zona) VALUES 
-('SUELO_SECO', 'Humedad crítica en tomates', 80.0, 30.0, 'PENDIENTE', NOW(), 3),
-('CALOR_EXTREMO', 'Aviso de temperatura alta', 35.0, 10.0, 'RESUELTA', DATE_SUB(NOW(), INTERVAL 1 DAY), 1),
-('FALLO_SENSOR', 'Sensor de humedad no responde', NULL, NULL, 'IGNORADA', NOW(), 2);
-('SUELO_SECO', 'Nivel crítico de sequía en Sector Sur', 75.0, 20.0, 'PENDIENTE', NOW(), 1),
-('CALOR_EXTREMO', 'Sobrecalentamiento en invernadero principal', 45.0, 15.0, 'PENDIENTE', NOW(), 2),
-('FALLO_SENSOR', 'Sensor de humedad no responde en zona 3', NULL, NULL, 'PENDIENTE', DATE_SUB(NOW(), INTERVAL 1 HOUR), 3),
 
--- Ignoradas (Gris)
-('RIESGO_HONGOS', 'Humedad ambiental alta (Falsa alarma por lluvia)', 90.0, 10.0, 'IGNORADA', DATE_SUB(NOW(), INTERVAL 3 HOUR), 1),
-('AIRE_MUY_SECO', 'Baja humedad relativa en el ambiente', NULL, NULL, 'IGNORADA', DATE_SUB(NOW(), INTERVAL 1 DAY), 2),
+-- 3. INSERTAR REGISTROS HISTÓRICOS DE SENSORES
+INSERT INTO registro (id, fecha, temperatura, humedad_suelo, lluvia, id_zona) VALUES
+-- Zona 1: Tomate (Carlos) -> Estado actual: Seco (Provoca Alerta y Riego Activo)
+(1, '2026-05-15 09:00:00', 22.4, 60.0, 0, 1),
+(2, '2026-05-15 15:00:00', 31.2, 52.5, 0, 1),
+(3, '2026-05-16 10:00:00', 26.8, 41.0, 0, 1), 
 
--- Resueltas (Verde)
-('PRONOSTICO_LLUVIA', 'Riego cancelado por lluvia prevista', 100.0, 0.0, 'RESUELTA', DATE_SUB(NOW(), INTERVAL 5 HOUR), 2),
-('SUELO_ENCHARCADO', 'Drenaje completado con éxito', 95.0, 40.0, 'RESUELTA', DATE_SUB(NOW(), INTERVAL 12 HOUR), 1);
+-- Zona 2: Olivo (Laura) -> Estado actual: Ola de Calor Extremo
+(4, '2026-05-15 12:00:00', 35.0, 40.0, 0, 2),
+(5, '2026-05-16 14:30:00', 46.2, 35.0, 0, 2), 
+
+-- Zona 3: Vid (Pedro) -> Estado actual: Óptimo Recuperado (Historial cerrado)
+(6, '2026-05-15 08:30:00', 20.1, 30.0, 0, 3), 
+(7, '2026-05-16 09:15:00', 24.5, 78.0, 0, 3), 
+
+-- Zona 4: Almendro (Carlos) -> Estado actual: Registro de pico térmico previo
+(8, '2026-05-15 16:00:00', 43.5, 30.0, 0, 4), -- Provocó alerta por exceso de temperatura (Límite: 40)
+(9, '2026-05-16 11:00:00', 28.0, 28.0, 0, 4);
+
+
+-- 4. INSERTAR HISTORIAL DE RIEGOS SIMULADOS
+INSERT INTO riego (id, fecha, hora_inicio, hora_fin, id_zona) VALUES
+(1, '2026-05-16', '2026-05-16 10:00:00', NULL, 1),
+(2, '2026-05-15', '2026-05-15 08:30:00', '2026-05-15 09:45:00', 3);
+
+
+-- 5. INSERTAR ALERTAS (PENDIENTES, RESUELTAS E IGNORADAS)
+INSERT INTO alerta (id, tipo_alerta, descripcion, min, max, estado, fecha, id_zona) VALUES
+-- Alerta pendiente en el panel de Carlos (Zona 1)
+(1, 'SUELO_SECO', 'Humedad crítica bajo el límite: 41.0% (Mín configurado: 45.0%)', 45.0, 85.0, 'PENDIENTE', '2026-05-16 10:00:00', 1),
+
+-- Alerta pendiente en el panel de Laura (Zona 2)
+(2, 'CALOR_EXTREMO', 'Temperatura ambiental excesiva en olivar: 46.2°C (Máx: 45.0°C)', 20.0, 45.0, 'PENDIENTE', '2026-05-16 14:30:00', 2),
+
+-- Alerta histórica resuelta automáticamente por tu lógica en el panel de Pedro (Zona 3)
+(3, 'SUELO_SECO', 'Estrés hídrico detectado: 30.0%', 35.0, 75.0, 'RESUELTA', '2026-05-15 08:30:00', 3),
+
+-- ⚡ NUEVA ALERTA IGNORADA MANUALMENTE: Panel de Carlos (Zona 4 - Almendro)
+(4, 'CALOR_EXTREMO', 'Aviso térmico descartado por el operario: 43.5°C (Máx configurado: 40.0°C)', 0.0, 40.0, 'IGNORADA', '2026-05-15 16:00:00', 4);

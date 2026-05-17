@@ -183,12 +183,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   // ── Alertas ───────────────────────────────────────────────────────────────
-  resolverAlerta(idAlerta: number) {
-    this.alertaService.resolverAlerta(idAlerta).subscribe({
+  gestionarAlerta(idAlerta: number, estado: 'RESUELTA' | 'IGNORADA') {
+    const titulo = estado === 'RESUELTA' ? '¡Resuelta!' : '¡Ignorada!';
+    const texto = estado === 'RESUELTA' ? 'La incidencia ha sido marcada como finalizada.' : 'La alerta ha sido descartada.';
+
+    this.alertaService.cambiarEstadoAlerta(idAlerta, estado).subscribe({
       next: () => {
         Swal.fire({
-          title: '¡Resuelta!',
-          text: 'La incidencia ha sido marcada como finalizada.',
+          title: titulo,
+          text: texto,
           icon: 'success',
           timer: 1500,
           showConfirmButton: false,
@@ -201,6 +204,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
         Swal.fire({ title: 'Error', text: 'No se pudo actualizar el estado.', icon: 'error', background: '#0f172a', color: '#ffffff' });
       }
     });
+  }
+
+  // Mantenemos este para compatibilidad si se usa en otros sitios
+  resolverAlerta(idAlerta: number) {
+    this.gestionarAlerta(idAlerta, 'RESUELTA');
   }
 
   // ── Usuarios (ADMIN) ──────────────────────────────────────────────────────
@@ -405,26 +413,43 @@ export class DashboardComponent implements OnInit, OnDestroy {
   apagarRiego(idZona: number) {
     const idRiego = this.riegoActivo().get(idZona);
 
-    if (!idRiego) {
-      // Si no tenemos el ID en el mapa (ej: tras refrescar o riego automático), 
-      // intentamos buscar la sesión activa en el historial
-      this.zonaService.getHistorialRiego(idZona).subscribe({
-        next: (historial) => {
-          // Buscamos una sesión que no tenga hora de fin
-          const sesionActiva = historial.find(h => !h.horaFin);
-          if (sesionActiva) {
-            this.ejecutarApagadoRiego(sesionActiva.id, idZona);
-          } else {
-            // Si no hay sesión en historial, puede ser un riego por alerta automática
-            this.manejarRiegoSinSesion(idZona);
-          }
-        },
-        error: () => this.manejarRiegoSinSesion(idZona)
-      });
+    // 1. Si tenemos el ID de sesión manual, lo paramos directamente
+    if (idRiego) {
+      this.ejecutarApagadoRiego(idRiego, idZona);
       return;
     }
 
-    this.ejecutarApagadoRiego(idRiego, idZona);
+    // 2. Si no hay ID manual, buscamos si hay una sesión activa en el historial (por si se refrescó la página)
+    this.zonaService.getHistorialRiego(idZona).subscribe({
+      next: (historial) => {
+        const sesionActiva = historial.find(h => !h.horaFin);
+        if (sesionActiva) {
+          this.ejecutarApagadoRiego(sesionActiva.id, idZona);
+        } else {
+          // 3. Si no hay sesión, pero el riego sigue "ON", es por una alerta automática.
+          // La detenemos resolviendo la alerta de forma directa.
+          this.detenerRiegoAutomatico(idZona);
+        }
+      },
+      error: () => this.detenerRiegoAutomatico(idZona)
+    });
+  }
+
+  private detenerRiegoAutomatico(idZona: number) {
+    const alerta = this.alertasPendientes().find(a => 
+      (a.idZona === idZona || a.zonaId === idZona || (a.zona && a.zona.id === idZona)) && 
+      a.tipo === 'SUELO_SECO' && a.estado === 'PENDIENTE'
+    );
+
+    if (alerta) {
+      // Si hay alerta, la resolvemos para parar el riego
+      this.gestionarAlerta(alerta.id, 'RESUELTA');
+    } else {
+      // Si no hay nada, simplemente sincronizamos el estado visual
+      const mapa = new Map(this.riegoActivo());
+      mapa.delete(idZona);
+      this.riegoActivo.set(mapa);
+    }
   }
 
   private ejecutarApagadoRiego(idRiego: number, idZona: number) {

@@ -70,5 +70,19 @@ public class AlertaController {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
 		}
 	}
+	//Marcar ignoradas
+	
+	@PutMapping("/{id}/ignorar")
+	public ResponseEntity<?> ignorarAlerta(@PathVariable Integer id) {
+	    try {
+	        // Marcamos la alerta como ignorada en la base de datos
+	        Alerta ignorada = this.alertaService.marcarComoIgnorada(id); 
+	        return ResponseEntity.ok(AlertaMapper.toDTO(ignorada));
+	    } catch (AlertaNotFoundException e) {
+	        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+	    } catch (Exception e) {
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al ignorar la alerta");
+	    }
+	}
 
 }

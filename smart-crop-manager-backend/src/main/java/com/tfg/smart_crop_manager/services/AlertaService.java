@@ -65,6 +65,19 @@ public class AlertaService {
 		alertaBD.setEstado(EstadoAlerta.RESUELTA);
 		return this.alertaRepository.save(alertaBD);
 	}
+	
+	//Marcar como ignoradas
+	public Alerta marcarComoIgnorada(Integer idAlerta) throws AlertaNotFoundException {
+	    // 1. Buscamos la alerta en la base de datos
+	    Alerta alertaBD= alertaRepository.findById(idAlerta)
+	            .orElseThrow(() -> new AlertaNotFoundException("No existe la alerta con ID: " + idAlerta));
+	    // 2. Cambiamos el estado (Asegúrate de que tu Enum EstadoAlerta tenga el valor IGNORADA)
+	    alertaBD.setEstado(EstadoAlerta.IGNORADA);
+	    
+	    
+	    // 4. Guardamos los cambios
+	    return alertaRepository.save(alertaBD);
+	}
 
 	public List<AlertaDTO> findAllAlertas() {
 		// 1. Buscamos todas las alertas de la base de datos (puedes usar findByEstado

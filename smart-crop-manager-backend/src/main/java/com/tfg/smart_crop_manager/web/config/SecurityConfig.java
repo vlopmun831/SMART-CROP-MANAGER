@@ -37,6 +37,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // 1. Endpoints públicos
                 .requestMatchers("/auth/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/registros").permitAll()
                 
                 // 2. Endpoints solo para ADMIN
                 .requestMatchers("/usuario/**").hasRole("ADMIN")

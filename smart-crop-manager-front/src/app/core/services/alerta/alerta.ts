@@ -9,26 +9,25 @@ export class AlertaService {
   private http = inject(HttpClient);
   private API_URL = 'http://localhost:8099/alertas';
 
-  /**
-   * Obtiene las alertas pendientes de un usuario específico
-   * Endpoint según Postman: GET /alertas/usuario/{id}/pendientes
-   */
   getAlertasPendientes(idUsuario: number): Observable<any[]> {
     return this.http.get<any[]>(`${this.API_URL}/usuario/${idUsuario}/pendientes`);
   }
 
-  /**
-   * Obtiene TODAS las alertas del sistema (para el panel ADMIN)
-   */
   getAlertasGlobales(): Observable<any[]> {
     return this.http.get<any[]>(`${this.API_URL}`);
   }
 
   /**
-   * Marca una alerta como resuelta
-   * Endpoint según Postman: PUT /alertas/{id}/resolver
+   * Cambia el estado de una alerta llamando al endpoint específico del backend
    */
+  cambiarEstadoAlerta(idAlerta: number, nuevoEstado: string): Observable<any> {
+    // Si es RESUELTA, llama a /alertas/{id}/resolver
+    // Si es IGNORADA, llama a /alertas/{id}/ignorar
+    const endpoint = nuevoEstado === 'RESUELTA' ? 'resolver' : 'ignorar';
+    return this.http.put(`${this.API_URL}/${idAlerta}/${endpoint}`, {});
+  }
+
   resolverAlerta(idAlerta: number): Observable<any> {
-    return this.http.put(`${this.API_URL}/${idAlerta}/resolver`, {});
+    return this.cambiarEstadoAlerta(idAlerta, 'RESUELTA');
   }
 }

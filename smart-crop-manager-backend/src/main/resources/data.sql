@@ -20,7 +20,7 @@ SET FOREIGN_KEY_CHECKS = 1;
 	-- 2. INSERTAR ZONAS DE CULTIVO
 	INSERT INTO zona_cultivo (id, var_cultivo, ubicacion, hum_suelo_min_config, hum_suelo_max_config, temp_max_config, id_usuario) VALUES
 	(1, 'TOMATE', 'Invernadero A - Sector Norte', 45.0, 85.0, 32.0, 2),
-	(2, 'OLIVO', 'Finca Olivar Sur', NULL, NULL, NULL, 3), 
+	(2, 'OLIVO', 'Finca Olivar Sur', 40.0, 60.0, 45.0, 3), 
 	(3, 'VID', 'Parcela Ladera Oeste', 35.0, 75.0, 38.0, 4),
 	(4, 'ALMENDRO', 'Sector Secano Este', 25.0, 70.0, 40.0, 2);
 	

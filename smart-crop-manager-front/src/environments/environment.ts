@@ -1,4 +1,4 @@
 export const environment = {
   production: false,
-  apiUrl: (window as any)['env']?.API_URL || 'http://localhost:8080/smart-crop-manager'
+  apiUrl: (window as any)['env']?.API_URL || 'http://localhost:8099/smart-crop-manager'
 };

@@ -113,7 +113,7 @@ public class RegistroService {
 		// --- 2. COMPROBACIONES DE ALERTAS Y ENCENDIDO ---
 
 		// ¿Falta agua y NO está lloviendo? -> ENCENDEMOS
-		if (reg.getHumedadSuelo() < minHum && !reg.isLluvia()) {
+		if (reg.getHumedadSuelo() < minHum && !reg.isLluvia()) {  
 			alertaService.registrarAlertaAutomatica(zona, TipoAlerta.SUELO_SECO,
 					"Humedad baja: " + reg.getHumedadSuelo() + "% (Límite: " + minHum + "%)");
 

@@ -2,6 +2,7 @@ import { Injectable, signal, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { tap } from 'rxjs';
 import { Router } from '@angular/router';
+import { environment } from '../../../environments/environment';
 
 interface AuthResponse {
   token: string;
@@ -17,7 +18,7 @@ export class AuthService {
 
   private router = inject(Router);
   private http = inject(HttpClient);
-  private API_URL = 'http://localhost:8099/auth'; 
+  private API_URL = `${environment.apiUrl}/auth`; 
 
   public isAuthenticated = signal<boolean>(!!localStorage.getItem('token'));
   public userRole = signal<string | null>(localStorage.getItem('userRole'));

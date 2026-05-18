@@ -3,7 +3,7 @@ services:
     image: mariadb:11
     environment:
       MYSQL_ROOT_PASSWORD: secreta
-      MYSQL_DATABASE: daw
+      MYSQL_DATABASE: smart-crop-manager
       MYSQL_USER: admin
       MYSQL_PASSWORD: secreta
     ports:
@@ -28,27 +28,32 @@ services:
       - db
 
   backend:
-    image: vricheb973/smart-crop-manager-backend:latest
+    image: valomu81/smart-crop-manager-backend:latest
+    container_name: smart-crop-backend
     restart: always
+    ports:
+      # - "8099:8099" # Puerto local original
+      - "8099:8099" # Puerto estándar API VPS
     environment:
       PERFIL_ACTIVO: prod
-      SPRING_DATASOURCE_URL: jdbc:mariadb://db:3306/daw-task?createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_URL: jdbc:mariadb://db:3306/smart-crop-manager?createDatabaseIfNotExist=true
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: secreta
-      FRONTEND_URL: http://217.160.115.67
-    ports:
-      - "8080:8080"
+      FRONTEND_URL: http://192.168.9.234
     depends_on:
       - db
 
+  # SERVICIO FRONTEND (Imágenes de Docker Hub)
   frontend:
-    image: vricheb973/smart-crop-manager-front:latest
+    image: valomu81/smart-crop-manager-front:latest
+    container_name: smart-crop-frontend
     restart: always
+    ports:
+      # - "80:80" # Puerto local original
+      - "80:80" # Puerto web estándar VPS
     environment:
       # Si usas ngx-env o similar para parametrizar el frontend
-      API_URL: http://backend:8080/dawtask
-    ports:
-      - "80:80"
+      API_URL: http://192.168.9.234:8099/smart-crop-manager
     depends_on:
       - backend
 volumes:

@@ -1,13 +1,14 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ZonaService {
   private http = inject(HttpClient);
-  private API_URL = 'http://localhost:8099/zonas';
+  private API_URL = `${environment.apiUrl}/zonas`;
 
   // --- MÉTODOS DE CONSULTA ---
 
@@ -40,28 +41,28 @@ export class ZonaService {
   // --- RIEGO ---
   // POST /riego/zona/{zonaId}/iniciar  → inicia y devuelve el objeto Riego con su id
   iniciarRiego(idZona: number): Observable<any> {
-    return this.http.post<any>(`http://localhost:8099/riego/zona/${idZona}/iniciar`, {});
+    return this.http.post<any>(`${environment.apiUrl}/riego/zona/${idZona}/iniciar`, {});
   }
 
   // PUT /riego/{riegoId}/finalizar  → usa el ID del registro de riego, NO el de la zona
   finalizarRiego(idRiego: number): Observable<any> {
-    return this.http.put<any>(`http://localhost:8099/riego/${idRiego}/finalizar`, {});
+    return this.http.put<any>(`${environment.apiUrl}/riego/${idRiego}/finalizar`, {});
   }
 
   // GET /riego/zona/{idZona}/historial → historial de sesiones de riego
   getHistorialRiego(idZona: number): Observable<any[]> {
-    return this.http.get<any[]>(`http://localhost:8099/riego/zona/${idZona}/historial`);
+    return this.http.get<any[]>(`${environment.apiUrl}/riego/zona/${idZona}/historial`);
   }
 
   // --- HISTÓRICO DE DATOS DE SENSORES ---
 
   // GET /registros/zona/{zonaId}  → historial completo
   getHistorialDatos(idZona: number): Observable<any[]> {
-    return this.http.get<any[]>(`http://localhost:8099/registros/zona/${idZona}`);
+    return this.http.get<any[]>(`${environment.apiUrl}/registros/zona/${idZona}`);
   }
 
   // GET /registros/zona/{zonaId}/ultimo  → último dato (para el dashboard en tiempo real)
   getUltimoRegistro(idZona: number): Observable<any> {
-    return this.http.get<any>(`http://localhost:8099/registros/zona/${idZona}/ultimo`);
+    return this.http.get<any>(`${environment.apiUrl}/registros/zona/${idZona}/ultimo`);
   }
 }

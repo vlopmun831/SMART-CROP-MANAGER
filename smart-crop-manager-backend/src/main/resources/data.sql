@@ -11,10 +11,10 @@ SET FOREIGN_KEY_CHECKS = 1;
 
 	-- 1. INSERTAR USUARIOS (Contraseña de todos encriptada con BCrypt: 'admin1234' y '1234')
 	INSERT INTO usuario (id, nombre, email, password, rol) VALUES
-	(1, 'Vanesa', 'admin@smartcrop.com', '$2a$10$epMlyz1Y5tI0V1G5SXZ5H.5vEaQhM/T1O6J9Q2Nq6rL4W2W5Q1k2e', 'ADMIN'),
-	(2, 'Carlos', 'carlos@smartcrop.com', '$2a$10$epMlyz1Y5tI0V1G5SXZ5H.5vEaQhM/T1O6J9Q2Nq6rL4W2W5Q1k2e', 'USUARIO'),
-	(3, 'Laura', 'laura@smartcrop.com', '$2a$10$epMlyz1Y5tI0V1G5SXZ5H.5vEaQhM/T1O6J9Q2Nq6rL4W2W5Q1k2e', 'USUARIO'),
-	(4, 'Pedro', 'pedro@smartcrop.com', '$2a$10$epMlyz1Y5tI0V1G5SXZ5H.5vEaQhM/T1O6J9Q2Nq6rL4W2W5Q1k2e', 'USUARIO');
+	(1, 'Vanesa', 'admin@smartcrop.com', '$2a$12$Majstr/v952Y4Ai4XiS1v.Rt8sm0xIQwhnyV2qoasonPYMnd2Tv/e', 'ADMIN'),
+	(2, 'Carlos', 'carlos@smartcrop.com', '$2a$12$9YxOh9l3oVGd0pw927SbceWbQbpMq067gOG8RtPC8RXAFBzvd34RC', 'USUARIO'),
+	(3, 'Laura', 'laura@smartcrop.com', '$2a$12$9YxOh9l3oVGd0pw927SbceWbQbpMq067gOG8RtPC8RXAFBzvd34RC', 'USUARIO'),
+	(4, 'Pedro', 'pedro@smartcrop.com', '$2a$12$9YxOh9l3oVGd0pw927SbceWbQbpMq067gOG8RtPC8RXAFBzvd34RC', 'USUARIO');
 	
 	
 	-- 2. INSERTAR ZONAS DE CULTIVO

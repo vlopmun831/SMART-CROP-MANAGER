@@ -2,11 +2,13 @@ package com.tfg.smart_crop_manager.services;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.tfg.smart_crop_manager.dto.RiegoDTO;
 import com.tfg.smart_crop_manager.mappers.RiegoMapper;
@@ -18,6 +20,7 @@ import com.tfg.smart_crop_manager.services.exceptions.RiegoException;
 import com.tfg.smart_crop_manager.services.exceptions.RiegoNotFoundException;
 
 @Service
+@Transactional
 public class RiegoService {
 
 	@Autowired
@@ -48,8 +51,8 @@ public class RiegoService {
 		ZonaCultivo zona = zonaCultivoService.findById(idZona);
 
 		Riego nuevoRiego = new Riego();
-		nuevoRiego.setFecha(LocalDate.now());
-		nuevoRiego.setHoraInicio(horaInicio != null ? horaInicio : LocalDateTime.now());
+		nuevoRiego.setFecha(LocalDate.now(ZoneId.of("Europe/Madrid")));
+		nuevoRiego.setHoraInicio(horaInicio != null ? horaInicio : LocalDateTime.now(ZoneId.of("Europe/Madrid")));
 		nuevoRiego.setZonaCultivo(zona);
 
 		return this.riegoRepository.save(nuevoRiego);
@@ -59,12 +62,8 @@ public class RiegoService {
 		// 1. Buscamos el riego abierto de esta zona
 		List<Riego> riegosAbiertos = this.riegoRepository.findByZonaCultivoIdAndHoraFinIsNull(idZona);
 
-		if (riegosAbiertos.isEmpty()) {
-			throw new RiegoNotFoundException("No hay ningún riego activo en esta zona para detener.");
-		}
-
-		// 2. Lo cerramos
-		LocalDateTime ahora = LocalDateTime.now();
+		// 2. Lo cerramos si existe
+		LocalDateTime ahora = LocalDateTime.now(ZoneId.of("Europe/Madrid"));
 		Riego ultimoCerrado = null;
 
 		for (Riego riego : riegosAbiertos) {
@@ -73,8 +72,7 @@ public class RiegoService {
 		}
 
 		// 3. ⚡ RESOLVER ALERTA AUTOMÁTICAMENTE ⚡
-		// Llamamos al método que creamos en AlertaService para que el Front se
-		// actualice
+		// Siempre resolvemos la alerta de SUELO_SECO asociada a esta zona al detener el riego
 		alertaService.resolverAlertaPorZonaYTipo(idZona, TipoAlerta.SUELO_SECO);
 
 		return ultimoCerrado;
@@ -88,7 +86,7 @@ public class RiegoService {
 			throw new RiegoException("El registro de riego ya tiene una hora de finalización.");
 		}
 
-		riegoBD.setHoraFin(horaFin != null ? horaFin : LocalDateTime.now());
+		riegoBD.setHoraFin(horaFin != null ? horaFin : LocalDateTime.now(ZoneId.of("Europe/Madrid")));
 
 		return this.riegoRepository.save(riegoBD);
 	}

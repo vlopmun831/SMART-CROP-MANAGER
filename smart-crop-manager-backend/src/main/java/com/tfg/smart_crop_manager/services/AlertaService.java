@@ -1,12 +1,14 @@
 package com.tfg.smart_crop_manager.services;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.tfg.smart_crop_manager.dto.AlertaDTO;
 import com.tfg.smart_crop_manager.mappers.AlertaMapper;
@@ -19,6 +21,7 @@ import com.tfg.smart_crop_manager.services.exceptions.AlertaException;
 import com.tfg.smart_crop_manager.services.exceptions.AlertaNotFoundException;
 
 @Service
+@Transactional
 public class AlertaService {
 
 	@Autowired
@@ -96,11 +99,18 @@ public class AlertaService {
 	// --- MÉTODO PARA EL SISTEMA (AUTOMÁTICO) ---
 
 	public void registrarAlertaAutomatica(ZonaCultivo zona, TipoAlerta tipo, String mensaje) {
+		// Evitar duplicados de alertas pendientes del mismo tipo para la misma zona
+		List<Alerta> existentes = alertaRepository.findByZonaCultivoIdAndTipoAlertaAndEstado(
+				zona.getId(), tipo, EstadoAlerta.PENDIENTE);
+		if (!existentes.isEmpty()) {
+			return; // Ya existe una alerta pendiente de este tipo, no creamos otra
+		}
+
 		Alerta alerta = new Alerta();
 		alerta.setZonaCultivo(zona);
 		alerta.setTipoAlerta(tipo);
 		alerta.setDescripcion(mensaje);
-		alerta.setFecha(LocalDateTime.now());
+		alerta.setFecha(LocalDateTime.now(ZoneId.of("Europe/Madrid")));
 		alerta.setEstado(EstadoAlerta.PENDIENTE);
 
 		// Inicializamos umbrales a 0 o null si tu entidad los obliga

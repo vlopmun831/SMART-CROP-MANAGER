@@ -49,6 +49,11 @@ export class ZonaService {
     return this.http.put<any>(`${environment.apiUrl}/riego/${idRiego}/finalizar`, {});
   }
 
+  // PUT /riego/zona/{idZona}/finalizar → finaliza el riego activo por el ID de la zona y resuelve la alerta
+  finalizarRiegoPorZona(idZona: number): Observable<any> {
+    return this.http.put<any>(`${environment.apiUrl}/riego/zona/${idZona}/finalizar`, {});
+  }
+
   // GET /riego/zona/{idZona}/historial → historial de sesiones de riego
   getHistorialRiego(idZona: number): Observable<any[]> {
     return this.http.get<any[]>(`${environment.apiUrl}/riego/zona/${idZona}/historial`);

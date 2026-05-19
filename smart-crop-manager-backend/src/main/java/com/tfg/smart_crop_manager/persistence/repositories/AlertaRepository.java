@@ -20,7 +20,8 @@ public interface AlertaRepository extends JpaRepository<Alerta, Integer> {
 	// Requisito:borrar tipo alerta
 	List<Alerta> findByZonaCultivoIdAndTipoAlerta(Integer idZona, TipoAlerta tipoAlerta);
 
-	List<Alerta> findByZonaCultivoIdAndTipoAlertaAndEstado(Integer idZona, TipoAlerta tipo, EstadoAlerta estado);
+	@Query("SELECT a FROM Alerta a WHERE a.zonaCultivo.id = :idZona AND a.tipoAlerta = :tipo AND a.estado = :estado")
+	List<Alerta> findByZonaCultivoIdAndTipoAlertaAndEstado(@Param("idZona") Integer idZona, @Param("tipo") TipoAlerta tipo, @Param("estado") EstadoAlerta estado);
 
 	// AlertaRepository.java
 	// Reemplaza tu método findPendientesByUsuarioId por este:

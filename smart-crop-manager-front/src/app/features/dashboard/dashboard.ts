@@ -411,56 +411,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   apagarRiego(idZona: number) {
-    const idRiego = this.riegoActivo().get(idZona);
-
-    // 1. Si tenemos el ID de sesión manual, lo paramos directamente
-    if (idRiego) {
-      this.ejecutarApagadoRiego(idRiego, idZona);
-      return;
-    }
-
-    // 2. Si no hay ID manual, buscamos si hay una sesión activa en el historial (por si se refrescó la página)
-    this.zonaService.getHistorialRiego(idZona).subscribe({
-      next: (historial) => {
-        const sesionActiva = historial.find(h => !h.horaFin);
-        if (sesionActiva) {
-          this.ejecutarApagadoRiego(sesionActiva.id, idZona);
-        } else {
-          // 3. Si no hay sesión, pero el riego sigue "ON", es por una alerta automática.
-          // La detenemos resolviendo la alerta de forma directa.
-          this.detenerRiegoAutomatico(idZona);
-        }
-      },
-      error: () => this.detenerRiegoAutomatico(idZona)
-    });
-  }
-
-  private detenerRiegoAutomatico(idZona: number) {
-    const alerta = this.alertasPendientes().find(a => 
-      (a.idZona === idZona || a.zonaId === idZona || (a.zona && a.zona.id === idZona)) && 
-      a.tipo === 'SUELO_SECO' && a.estado === 'PENDIENTE'
-    );
-
-    if (alerta) {
-      // Si hay alerta, la resolvemos para parar el riego
-      this.gestionarAlerta(alerta.id, 'RESUELTA');
-    } else {
-      // Si no hay nada, simplemente sincronizamos el estado visual
-      const mapa = new Map(this.riegoActivo());
-      mapa.delete(idZona);
-      this.riegoActivo.set(mapa);
-    }
-  }
-
-  private ejecutarApagadoRiego(idRiego: number, idZona: number) {
-    this.zonaService.finalizarRiego(idRiego).subscribe({
+    this.zonaService.finalizarRiegoPorZona(idZona).subscribe({
       next: () => {
+        // Limpiamos el mapa local
         const mapa = new Map(this.riegoActivo());
         mapa.delete(idZona);
         this.riegoActivo.set(mapa);
+
         Swal.fire({ 
           title: 'Riego Detenido', 
-          text: 'La sesión de riego ha finalizado correctamente.', 
+          text: 'El riego ha sido detenido correctamente y las alertas asociadas resueltas.', 
           icon: 'success', 
           timer: 1500, 
           showConfirmButton: false, 
@@ -469,46 +429,63 @@ export class DashboardComponent implements OnInit, OnDestroy {
         });
         this.cargarDatosSegunRol();
       },
-      error: () => Swal.fire({ title: 'Error', text: 'No se pudo detener el riego.', icon: 'error', background: '#0f172a', color: '#ffffff' })
-    });
-  }
+      error: (err) => {
+        console.error('Error al detener el riego:', err);
+        
+        // Fallback: Si no hay riego activo en el backend, pero en el frontend vemos una alerta de SUELO_SECO,
+        // intentamos resolver la alerta para limpiar el estado visual.
+        const alertaSueloSeco = this.alertasPendientes().find(a => 
+          (a.idZona === idZona || a.zonaId === idZona || (a.zona && a.zona.id === idZona)) && 
+          a.tipo === 'SUELO_SECO' && a.estado === 'PENDIENTE'
+        );
 
-  private manejarRiegoSinSesion(idZona: number) {
-    // Buscamos si hay una alerta de SUELO_SECO que esté causando que el riego se vea como "activo"
-    const alerta = this.alertasPendientes().find(a => 
-      (a.idZona === idZona || a.zonaId === idZona || (a.zona && a.zona.id === idZona)) && 
-      a.tipo === 'SUELO_SECO' && a.estado === 'PENDIENTE'
-    );
-
-    if (alerta) {
-      Swal.fire({
-        title: 'Riego Automático',
-        text: 'El riego está activo automáticamente por falta de humedad. Para detenerlo, debes resolver la alerta crítica.',
-        icon: 'info',
-        showCancelButton: true,
-        confirmButtonText: 'Resolver Alerta',
-        cancelButtonText: 'Cerrar',
-        background: '#0f172a',
-        color: '#ffffff',
-        confirmButtonColor: '#10b981'
-      }).then(result => {
-        if (result.isConfirmed) {
-          this.resolverAlerta(alerta.id);
+        if (alertaSueloSeco) {
+          this.alertaService.cambiarEstadoAlerta(alertaSueloSeco.id, 'RESUELTA').subscribe({
+            next: () => {
+              const mapa = new Map(this.riegoActivo());
+              mapa.delete(idZona);
+              this.riegoActivo.set(mapa);
+              
+              Swal.fire({
+                title: 'Estado Corregido',
+                text: 'No había riego activo en el servidor, pero la alerta de suelo seco ha sido resuelta.',
+                icon: 'success',
+                timer: 1500,
+                showConfirmButton: false,
+                background: '#0f172a',
+                color: '#ffffff'
+              });
+              this.cargarDatosSegunRol();
+            },
+            error: () => {
+              Swal.fire({ 
+                title: 'Error', 
+                text: 'No se pudo detener el riego ni resolver la alerta.', 
+                icon: 'error', 
+                background: '#0f172a', 
+                color: '#ffffff' 
+              });
+            }
+          });
+        } else {
+          // Si no hay alerta ni riego, simplemente limpiamos el estado local
+          const mapa = new Map(this.riegoActivo());
+          mapa.delete(idZona);
+          this.riegoActivo.set(mapa);
+          this.cargarDatosSegunRol();
+          
+          Swal.fire({ 
+            title: 'Sincronizado', 
+            text: 'El estado del riego se ha sincronizado correctamente.', 
+            icon: 'info', 
+            timer: 1500, 
+            showConfirmButton: false, 
+            background: '#0f172a', 
+            color: '#ffffff' 
+          });
         }
-      });
-    } else {
-      Swal.fire({ 
-        title: 'Estado Sincronizado', 
-        text: 'No se ha detectado ninguna sesión activa. El estado se ha actualizado.', 
-        icon: 'info', 
-        background: '#0f172a', 
-        color: '#ffffff' 
-      });
-      // Limpiamos el mapa por si acaso había basura
-      const mapa = new Map(this.riegoActivo());
-      mapa.delete(idZona);
-      this.riegoActivo.set(mapa);
-    }
+      }
+    });
   }
 
   tieneRiegoActivo(idZona: number): boolean {

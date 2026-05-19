@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: typeof window !== 'undefined' ? `http://${window.location.hostname}:8080` : 'http://backend:8099'
+  apiUrl: (window as any)['env']?.API_URL || 'http://localhost:8099/smart-crop-manager'
 };
